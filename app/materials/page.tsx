@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -30,103 +30,17 @@ import {
   Edit,
 } from "lucide-react"
 
-// Mock data
-const shortageItems = [
-  { id: 1, name: "Lápis de Cor", quantity: 2, needed: 20, category: "Arte" },
-  { id: 2, name: "Cadernos", quantity: 5, needed: 30, category: "Escolar" },
-  { id: 3, name: "Bolas de Futebol", quantity: 1, needed: 5, category: "Esporte" },
-]
-
-const initialMaterials = [
-  { id: 1, name: "Lápis", quantity: 150, category: "Escolar", description: "Lápis HB para escrita" },
-  { id: 2, name: "Borrachas", quantity: 80, category: "Escolar", description: "Borrachas brancas pequenas" },
-  {
-    id: 3,
-    name: "Livros Infantis",
-    quantity: 45,
-    category: "Educação",
-    description: "Livros para crianças de 6-10 anos",
-  },
-  { id: 4, name: "Tintas", quantity: 25, category: "Arte", description: "Tintas guache coloridas" },
-  { id: 5, name: "Jogos de Tabuleiro", quantity: 12, category: "Recreação", description: "Jogos educativos diversos" },
-  { id: 6, name: "Ferramentas", quantity: 8, category: "Manutenção", description: "Ferramentas básicas de manutenção" },
-]
-
-const overdueLends = [
-  {
-    id: 1,
-    item: "Livro: O Pequeno Príncipe",
-    borrower: "Maria Silva",
-    dueDate: "2024-01-15",
-    daysOverdue: 5,
-    description: "Empréstimo para leitura em casa",
-    authorizedBy: "Prof. João",
-    deliveredBy: "Ana",
-  },
-  {
-    id: 2,
-    item: "Jogo de Xadrez",
-    borrower: "João Santos",
-    dueDate: "2024-01-10",
-    daysOverdue: 10,
-    description: "Para prática de xadrez",
-    authorizedBy: "Prof. Maria",
-    deliveredBy: "Carlos",
-  },
-  {
-    id: 3,
-    item: "Calculadora Científica",
-    borrower: "Ana Costa",
-    dueDate: "2024-01-12",
-    daysOverdue: 8,
-    description: "Para aulas de matemática",
-    authorizedBy: "Prof. Pedro",
-    deliveredBy: "Sofia",
-  },
-]
-
-const initialLends = [
-  {
-    id: 1,
-    item: "Livro: Dom Casmurro",
-    borrower: "Pedro Lima",
-    dueDate: "2024-02-01",
-    category: "Livros",
-    description: "Empréstimo para projeto escolar",
-    authorizedBy: "Prof. Ana",
-    deliveredBy: "Maria",
-  },
-  {
-    id: 2,
-    item: "Bola de Basquete",
-    borrower: "Carla Mendes",
-    dueDate: "2024-01-30",
-    category: "Esporte",
-    description: "Para treino da equipe",
-    authorizedBy: "Prof. Carlos",
-    deliveredBy: "João",
-  },
-  {
-    id: 3,
-    item: "Kit de Pintura",
-    borrower: "Lucas Oliveira",
-    dueDate: "2024-02-05",
-    category: "Arte",
-    description: "Para aula de artes",
-    authorizedBy: "Prof. Sofia",
-    deliveredBy: "Ana",
-  },
-  {
-    id: 4,
-    item: "Jogo Monopoly",
-    borrower: "Sofia Rodrigues",
-    dueDate: "2024-01-28",
-    category: "Jogos",
-    description: "Para atividade recreativa",
-    authorizedBy: "Prof. Pedro",
-    deliveredBy: "Carlos",
-  },
-]
+import {
+  getMaterials,
+  createMaterial,
+  updateMaterial,
+  getLends,
+  createLend,
+  updateLend,
+  deleteLend,
+  type Material,
+  type Lend,
+} from "@/lib/database"
 
 const categories = [
   { name: "Todos", icon: BookOpen, color: "bg-gray-500" },
@@ -147,11 +61,12 @@ export default function MaterialsPage() {
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null)
   const [selectedLend, setSelectedLend] = useState<any>(null)
   const [isEditingLend, setIsEditingLend] = useState(false)
-  const [materials, setMaterials] = useState(initialMaterials)
-  const [lends, setLends] = useState(initialLends)
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [lends, setLends] = useState<Lend[]>([])
+  const [loading, setLoading] = useState(true)
   const [showCategoryFilter, setShowCategoryFilter] = useState(false)
   const [showLendsCategoryFilter, setShowLendsCategoryFilter] = useState(false)
-  const [editingQuantity, setEditingQuantity] = useState<number | null>(null)
+  const [editingQuantity, setEditingQuantity] = useState<string | null>(null)
   const { showSuccess, showError } = useNotification()
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
@@ -165,6 +80,24 @@ export default function MaterialsPage() {
     onConfirm: () => {},
   })
 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        console.log("[v0] Carregando materiais e empréstimos...")
+        const [materialsData, lendsData] = await Promise.all([getMaterials(), getLends()])
+        console.log("[v0] Dados carregados:", { materials: materialsData.length, lends: lendsData.length })
+        setMaterials(materialsData)
+        setLends(lendsData)
+      } catch (error) {
+        console.error("[v0] Erro ao carregar dados:", error)
+        showError("Erro ao carregar dados do banco")
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [showError])
+
   const filteredMaterials = materials.filter(
     (material) =>
       material.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -173,88 +106,131 @@ export default function MaterialsPage() {
 
   const filteredLends = lends.filter(
     (lend) =>
-      lend.item.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      lend.item_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (selectedCategory === "Todos" || lend.category === selectedCategory),
   )
 
-  const handleAddMaterial = (formData: FormData) => {
-    const newMaterial = {
-      id: materials.length + 1,
-      name: formData.get("item-name") as string,
-      quantity: Number.parseInt(formData.get("quantity") as string),
-      category: formData.get("category") as string,
-      description: formData.get("description") as string,
+  const handleAddMaterial = async (formData: FormData) => {
+    try {
+      const newMaterial = {
+        name: formData.get("item-name") as string,
+        quantity: Number.parseInt(formData.get("quantity") as string),
+        category: formData.get("category") as string,
+        description: formData.get("description") as string,
+      }
+
+      console.log("[v0] Criando material:", newMaterial)
+      const created = await createMaterial(newMaterial)
+      setMaterials([...materials, created])
+      showSuccess("Material cadastrado com sucesso!")
+      setIsAddMaterialOpen(false)
+    } catch (error) {
+      console.error("[v0] Erro ao criar material:", error)
+      showError("Erro ao cadastrar material")
     }
-    setMaterials([...materials, newMaterial])
-    showSuccess("Material cadastrado com sucesso!")
-    setIsAddMaterialOpen(false)
   }
 
-  const handleAddLend = (formData: FormData) => {
-    const newLend = {
-      id: lends.length + 1,
-      item: formData.get("item-select") as string,
-      borrower: formData.get("borrower") as string,
-      dueDate: formData.get("delivery-date") as string,
-      category: "Geral",
-      description: formData.get("description") as string,
-      authorizedBy: formData.get("authorized-by") as string,
-      deliveredBy: formData.get("delivered-by") as string,
+  const handleAddLend = async (formData: FormData) => {
+    try {
+      const newLend = {
+        item_name: formData.get("item-select") as string,
+        borrower: formData.get("borrower") as string,
+        due_date: formData.get("delivery-date") as string,
+        category: "Geral",
+        description: formData.get("description") as string,
+        authorized_by: formData.get("authorized-by") as string,
+        delivered_by: formData.get("delivered-by") as string,
+        quantity: Number.parseInt(formData.get("lend-quantity") as string) || 1,
+      }
+
+      console.log("[v0] Criando empréstimo:", newLend)
+      const created = await createLend(newLend)
+      setLends([created, ...lends])
+      showSuccess("Empréstimo cadastrado com sucesso!")
+      setIsAddLendOpen(false)
+    } catch (error) {
+      console.error("[v0] Erro ao criar empréstimo:", error)
+      showError("Erro ao cadastrar empréstimo")
     }
-    setLends([...lends, newLend])
-    showSuccess("Empréstimo cadastrado com sucesso!")
-    setIsAddLendOpen(false)
   }
 
-  const handleStockAdjustment = (materialId: number, action: "add" | "remove") => {
-    const material = materials.find((m) => m.id === materialId)
-    if (!material) return
+  const handleStockAdjustment = async (materialId: string, action: "add" | "remove") => {
+    try {
+      const material = materials.find((m) => m.id === materialId)
+      if (!material) return
 
-    setMaterials(
-      materials.map((m) =>
-        m.id === materialId ? { ...m, quantity: action === "add" ? m.quantity + 1 : Math.max(0, m.quantity - 1) } : m,
-      ),
-    )
-    showSuccess(`Estoque de ${material.name} atualizado!`)
+      const newQuantity = action === "add" ? material.quantity + 1 : Math.max(0, material.quantity - 1)
+
+      console.log("[v0] Atualizando estoque:", { materialId, action, newQuantity })
+      const updated = await updateMaterial(materialId, { quantity: newQuantity })
+
+      setMaterials(materials.map((m) => (m.id === materialId ? updated : m)))
+      showSuccess(`Estoque de ${material.name} atualizado!`)
+    } catch (error) {
+      console.error("[v0] Erro ao atualizar estoque:", error)
+      showError("Erro ao atualizar estoque")
+    }
   }
 
-  const handleQuantityEdit = (materialId: number, newQuantity: string) => {
-    const quantity = Number.parseInt(newQuantity) || 0
-    const material = materials.find((m) => m.id === materialId)
-    if (!material) return
+  const handleQuantityEdit = async (materialId: string, newQuantity: string) => {
+    try {
+      const quantity = Number.parseInt(newQuantity) || 0
+      const material = materials.find((m) => m.id === materialId)
+      if (!material) return
 
-    setMaterials(materials.map((m) => (m.id === materialId ? { ...m, quantity: Math.max(0, quantity) } : m)))
-    setEditingQuantity(null)
-    showSuccess(`Quantidade de ${material.name} atualizada para ${quantity}!`)
+      console.log("[v0] Editando quantidade:", { materialId, quantity })
+      const updated = await updateMaterial(materialId, { quantity: Math.max(0, quantity) })
+
+      setMaterials(materials.map((m) => (m.id === materialId ? updated : m)))
+      setEditingQuantity(null)
+      showSuccess(`Quantidade de ${material.name} atualizada para ${quantity}!`)
+    } catch (error) {
+      console.error("[v0] Erro ao editar quantidade:", error)
+      showError("Erro ao editar quantidade")
+    }
   }
 
-  const handleEditLend = (formData: FormData) => {
+  const handleEditLend = async (formData: FormData) => {
     if (!selectedLend) return
 
-    const updatedLend = {
-      ...selectedLend,
-      borrower: formData.get("edit-borrower") as string,
-      dueDate: formData.get("edit-due-date") as string,
-      description: formData.get("edit-description") as string,
-      authorizedBy: formData.get("edit-authorized-by") as string,
-      deliveredBy: formData.get("edit-delivered-by") as string,
-    }
+    try {
+      const updates = {
+        borrower: formData.get("edit-borrower") as string,
+        due_date: formData.get("edit-due-date") as string,
+        description: formData.get("edit-description") as string,
+        authorized_by: formData.get("edit-authorized-by") as string,
+        delivered_by: formData.get("edit-delivered-by") as string,
+      }
 
-    setLends(lends.map((lend) => (lend.id === selectedLend.id ? updatedLend : lend)))
-    showSuccess("Empréstimo atualizado com sucesso!")
-    setIsEditingLend(false)
-    setSelectedLend(null)
+      console.log("[v0] Editando empréstimo:", { id: selectedLend.id, updates })
+      const updated = await updateLend(selectedLend.id, updates)
+
+      setLends(lends.map((lend) => (lend.id === selectedLend.id ? updated : lend)))
+      showSuccess("Empréstimo atualizado com sucesso!")
+      setIsEditingLend(false)
+      setSelectedLend(null)
+    } catch (error) {
+      console.error("[v0] Erro ao editar empréstimo:", error)
+      showError("Erro ao editar empréstimo")
+    }
   }
 
-  const handleReturnLend = (lendId: number) => {
+  const handleReturnLend = (lendId: string) => {
     setConfirmDialog({
       open: true,
       title: "Confirmar Devolução",
       description: "Deseja marcar este empréstimo como devolvido?",
-      onConfirm: () => {
-        setLends(lends.filter((l) => l.id !== lendId))
-        showSuccess("Empréstimo marcado como devolvido!")
-        setSelectedLend(null)
+      onConfirm: async () => {
+        try {
+          console.log("[v0] Devolvendo empréstimo:", lendId)
+          await deleteLend(lendId)
+          setLends(lends.filter((l) => l.id !== lendId))
+          showSuccess("Empréstimo marcado como devolvido!")
+          setSelectedLend(null)
+        } catch (error) {
+          console.error("[v0] Erro ao devolver empréstimo:", error)
+          showError("Erro ao devolver empréstimo")
+        }
         setConfirmDialog({ ...confirmDialog, open: false })
       },
     })
@@ -281,21 +257,21 @@ export default function MaterialsPage() {
             <div>
               <h2 className="text-2xl font-bold text-[#7f6e62] text-center mb-6">Materiais que estão em falta</h2>
               <div className="flex gap-4 overflow-x-auto pb-4">
-                {shortageItems.map((item) => (
-                  <Card key={item.id} className="min-w-[280px] bg-red-50 border-red-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-red-500" />
-                        <Badge variant="destructive">Falta</Badge>
-                      </div>
-                      <h3 className="font-semibold text-[#7f6e62] mb-1">{item.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        Atual: {item.quantity} | Necessário: {item.needed}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">Categoria: {item.category}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+                {materials
+                  .filter((material) => material.quantity < 10)
+                  .map((item) => (
+                    <Card key={item.id} className="min-w-[280px] bg-red-50 border-red-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertTriangle className="w-5 h-5 text-red-500" />
+                          <Badge variant="destructive">Falta</Badge>
+                        </div>
+                        <h3 className="font-semibold text-[#7f6e62] mb-1">{item.name}</h3>
+                        <p className="text-sm text-gray-600">Atual: {item.quantity} | Necessário: 10</p>
+                        <p className="text-xs text-gray-500 mt-1">Categoria: {item.category}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
             </div>
 
@@ -485,22 +461,27 @@ export default function MaterialsPage() {
                 Empréstimos que passaram da data de devolução
               </h2>
               <div className="flex gap-4 overflow-x-auto pb-4">
-                {overdueLends.map((lend) => (
-                  <Card key={lend.id} className="min-w-[300px] bg-orange-50 border-orange-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-5 h-5 text-orange-500" />
-                        <Badge variant="destructive">{lend.daysOverdue} dias atrasado</Badge>
-                      </div>
-                      <h3 className="font-semibold text-[#7f6e62] mb-1">{lend.item}</h3>
-                      <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                        <User className="w-4 h-4" />
-                        {lend.borrower}
-                      </div>
-                      <p className="text-xs text-gray-500">Vencimento: {lend.dueDate}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+                {lends
+                  .filter((lend) => new Date(lend.due_date) < new Date())
+                  .map((lend) => (
+                    <Card key={lend.id} className="min-w-[300px] bg-orange-50 border-orange-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="w-5 h-5 text-orange-500" />
+                          <Badge variant="destructive">
+                            {Math.abs(new Date(lend.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)}{" "}
+                            dias atrasado
+                          </Badge>
+                        </div>
+                        <h3 className="font-semibold text-[#7f6e62] mb-1">{lend.item_name}</h3>
+                        <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                          <User className="w-4 h-4" />
+                          {lend.borrower}
+                        </div>
+                        <p className="text-xs text-gray-500">Vencimento: {lend.due_date}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
             </div>
 
@@ -630,7 +611,7 @@ export default function MaterialsPage() {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-[#7f6e62] text-sm">{lend.item}</h4>
+                        <h4 className="font-semibold text-[#7f6e62] text-sm">{lend.item_name}</h4>
                         <div className="flex items-center gap-1">
                           <Badge variant="outline" className="text-xs">
                             {lend.category}
@@ -656,7 +637,7 @@ export default function MaterialsPage() {
                         </div>
                         <div className="flex items-center gap-1 text-xs text-gray-600">
                           <Calendar className="w-3 h-3" />
-                          {lend.dueDate}
+                          {lend.due_date}
                         </div>
                       </div>
                     </CardContent>
@@ -737,7 +718,7 @@ export default function MaterialsPage() {
                 <>
                   <div className="grid gap-2">
                     <Label className="font-semibold">Item</Label>
-                    <p className="text-sm text-gray-700">{selectedLend.item}</p>
+                    <p className="text-sm text-gray-700">{selectedLend.item_name}</p>
                   </div>
                   <div className="grid gap-2">
                     <Label className="font-semibold">Solicitante</Label>
@@ -745,7 +726,7 @@ export default function MaterialsPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label className="font-semibold">Data de Entrega</Label>
-                    <p className="text-sm text-gray-700">{selectedLend.dueDate}</p>
+                    <p className="text-sm text-gray-700">{selectedLend.due_date}</p>
                   </div>
                   <div className="grid gap-2">
                     <Label className="font-semibold">Descrição</Label>
@@ -753,11 +734,11 @@ export default function MaterialsPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label className="font-semibold">Autorizado por</Label>
-                    <p className="text-sm text-gray-700">{selectedLend.authorizedBy}</p>
+                    <p className="text-sm text-gray-700">{selectedLend.authorized_by}</p>
                   </div>
                   <div className="grid gap-2">
                     <Label className="font-semibold">Entregue por</Label>
-                    <p className="text-sm text-gray-700">{selectedLend.deliveredBy}</p>
+                    <p className="text-sm text-gray-700">{selectedLend.delivered_by}</p>
                   </div>
                   <div className="flex gap-2 mt-4">
                     <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setIsEditingLend(true)}>
@@ -786,7 +767,7 @@ export default function MaterialsPage() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="edit-due-date">Data de Entrega</Label>
-                      <Input name="edit-due-date" type="date" defaultValue={selectedLend.dueDate} required />
+                      <Input name="edit-due-date" type="date" defaultValue={selectedLend.due_date} required />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="edit-description">Descrição</Label>
@@ -794,11 +775,11 @@ export default function MaterialsPage() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="edit-authorized-by">Autorizado por</Label>
-                      <Input name="edit-authorized-by" defaultValue={selectedLend.authorizedBy} required />
+                      <Input name="edit-authorized-by" defaultValue={selectedLend.authorized_by} required />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="edit-delivered-by">Entregue por</Label>
-                      <Input name="edit-delivered-by" defaultValue={selectedLend.deliveredBy} required />
+                      <Input name="edit-delivered-by" defaultValue={selectedLend.delivered_by} required />
                     </div>
                     <div className="flex gap-2 mt-4">
                       <Button
