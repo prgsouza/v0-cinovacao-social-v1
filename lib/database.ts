@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
+import { ReactNode } from "react"
 
 export interface Student {
   id: string
@@ -45,6 +46,9 @@ export interface Attendance {
 }
 
 export interface Lend {
+  date: string | number | Date
+  materialId: string
+  studentName: ReactNode
   id: string
   material_id?: string
   item_name: string

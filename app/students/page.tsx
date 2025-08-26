@@ -1018,7 +1018,7 @@ export default function StudentsPage() {
       }
     }
     loadData()
-  }, [showError])
+  }, [])
 
   return (
     <PageContainer>
