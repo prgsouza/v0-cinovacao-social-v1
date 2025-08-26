@@ -44,7 +44,7 @@ export default function MaterialsPage() {
       }
     }
     loadData()
-  }, [showError])
+  }, [])
 
   if (loading) return <Loading />
 
