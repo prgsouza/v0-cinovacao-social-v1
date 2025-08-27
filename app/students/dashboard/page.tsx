@@ -1,9 +1,8 @@
-// app/students/dashboard/page.tsx
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -14,12 +13,13 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Plus, CalendarIcon, Edit, Search, Mail, Bell, Camera } from "lucide-react"
-import { format } from "date-fns"
+import { Plus, CalendarIcon, Edit, Search, Mail, Bell, Camera, Clock } from "lucide-react"
+import { format, isFuture, isToday, startOfDay } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Image from "next/image"
 import { useNotification } from "@/hooks/use-notification"
-import { getActivities, createActivity, updateActivity, type Activity } from "@/lib/database"
+import { getActivities, createActivity, updateActivity, getAttendance, type Activity, type Attendance } from "@/lib/database"
+import { Separator } from "@/components/ui/separator"
 
 const weeklyAttendanceData = [
   { day: "D", attendance: 45, color: "#d09c91" },
@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const { showSuccess, showError } = useNotification()
 
   const [activities, setActivities] = useState<Activity[]>([])
+  const [recentAttendances, setRecentAttendances] = useState<Attendance[]>([])
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false)
   const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false)
@@ -55,26 +56,48 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    const loadActivities = async () => {
+    const loadDashboardData = async () => {
       try {
-        const activitiesData = await getActivities()
-        setActivities(activitiesData)
+        const [activitiesData, attendanceData] = await Promise.all([
+          getActivities(),
+          getAttendance()
+        ]);
+        
+        setActivities(activitiesData);
+
+        const uniqueDates = [...new Set(attendanceData.map(a => a.date))];
+        const recentDates = uniqueDates
+          .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+          .slice(0, 2)
+          .map(date => ({ date } as Attendance));
+        
+        setRecentAttendances(recentDates);
+
       } catch (error) {
-        showError("Erro ao carregar atividades")
+        showError("Erro ao carregar dados do dashboard")
       }
     }
-    loadActivities()
-  }, [])
+    loadDashboardData()
+  }, [showError])
 
   const handleCalendarDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date)
-      setIsCalendarOpen(false)
-      const dateString = format(date, "yyyy-MM-dd")
-      router.push(`/students/chamadas?date=${dateString}`)
+    if (!date) return;
+    setIsCalendarOpen(false)
+    const dateString = format(date, "yyyy-MM-dd")
+    const today = startOfDay(new Date());
+    const selectedDay = startOfDay(date);
+    if (isFuture(selectedDay)) {
+      showError("Não é possível interagir com uma data futura.");
+      return;
+    }
+    if (isToday(selectedDay)) {
+      router.push(`/students/chamadas?date=${dateString}`);
+    } 
+    else {
+      router.push(`/students/chamadas/relatorio?date=${dateString}`);
     }
   }
-
+  
   const handleAddActivity = async (formData: FormData) => {
     try {
       const newActivity = {
@@ -119,7 +142,7 @@ export default function DashboardPage() {
     }
   }
 
-  return (
+   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between bg-white/90 backdrop-blur-sm p-4 rounded-lg border border-[#d5c4aa]/30">
         <div className="flex items-center gap-4 flex-1">
@@ -190,6 +213,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white/90 backdrop-blur-sm">
           <CardHeader><CardTitle className="text-[#7f6e62]">Calendário</CardTitle></CardHeader>
@@ -200,11 +224,40 @@ export default function DashboardPage() {
                   <CalendarIcon className="mr-2 h-4 w-4" />{selectedDate ? format(selectedDate, "PPP", { locale: ptBR }) : "Selecione uma data"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={selectedDate} onSelect={handleCalendarDateSelect} initialFocus locale={ptBR} /></PopoverContent>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar 
+                  mode="single" 
+                  selected={selectedDate} 
+                  onSelect={handleCalendarDateSelect} 
+                  disabled={{ after: new Date() }}
+                  initialFocus 
+                  locale={ptBR} 
+                />
+              </PopoverContent>
             </Popover>
-            <p className="text-sm text-gray-600 mt-2">Clique em uma data para fazer a chamada</p>
+            <p className="text-sm text-gray-600 mt-2">Clique em uma data para ver ou fazer a chamada.</p>
+            {recentAttendances.length > 0 && (
+              <div className="mt-4">
+                <Separator className="mb-4" />
+                <div className="flex items-center mb-2">
+                    <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                    <h4 className="text-sm font-medium text-gray-800">Chamadas Recentes</h4>
+                </div>
+                <div className="space-y-1">
+                  {recentAttendances.map((att) => (
+                    <Link key={att.date} href={`/students/chamadas/relatorio?date=${att.date}`} className="block">
+                      <div className="flex justify-between items-center p-2 rounded-md hover:bg-gray-100 transition-colors cursor-pointer">
+                        <span className="text-sm font-medium text-gray-700">Relatório do dia {format(new Date(att.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</span>
+                        <span className="text-xs text-gray-500">{format(new Date(att.date + "T12:00:00Z"), "EEE", { locale: ptBR })}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
+
         <Card className="bg-white/90 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-[#7f6e62]">Atividade do dia</CardTitle>
@@ -223,6 +276,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
         <Card className="bg-white/90 backdrop-blur-sm">
           <CardHeader><CardTitle className="text-[#7f6e62]">Lembretes</CardTitle></CardHeader>
           <CardContent>
@@ -233,6 +287,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
       <Dialog open={isActivityDetailOpen} onOpenChange={setIsActivityDetailOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader><DialogTitle>{isEditingActivity ? "Editar Atividade" : "Detalhes da Atividade"}</DialogTitle></DialogHeader>
