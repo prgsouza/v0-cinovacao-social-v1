@@ -36,7 +36,7 @@ const sidebarItems = [
     items: [
       { title: "Configurações", icon: Settings, href: "/students/configuracoes" },
       { title: "Ajuda", icon: HelpCircle, href: "/students/ajuda" },
-      { title: "-Sair", icon: LogOut, href: "/auth/login" },
+      { title: "Voltar ao Hub", icon: Home, href: "/" },
     ],
   },
 ]
@@ -58,10 +58,6 @@ export default function StudentsLayout({ children }: { children: React.ReactNode
                     <p className="text-xs text-gray-600">Gestão de Alunos</p>
                   </div>
                 </div>
-                <Link href="/" className="flex items-center gap-2 text-sm text-[#88957d] hover:text-[#7f6e62] transition-colors mt-2">
-                  <Home className="w-3 h-3" />
-                  Voltar ao Hub
-                </Link>
               </div>
               {sidebarItems.map((group) => (
                 <SidebarGroup key={group.title}>
