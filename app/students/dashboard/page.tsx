@@ -171,28 +171,12 @@
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between bg-white/90 backdrop-blur-sm p-4 rounded-lg border border-[#d5c4aa]/30">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input placeholder="Pesquisar" className="pl-10 bg-gray-50 border-gray-200" />
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm"><Mail className="w-5 h-5 text-gray-600" /></Button>
-            <Button variant="ghost" size="sm"><Bell className="w-5 h-5 text-gray-600" /></Button>
-            <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8"><AvatarImage src="/placeholder.svg" alt="Joyce" /><AvatarFallback>J</AvatarFallback></Avatar>
-              <div className="text-sm"><p className="font-medium">Joyce</p><p className="text-gray-500 text-xs">gris@ong.br</p></div>
-            </div>
-          </div>
-        </div>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-[#7f6e62]">Visão Geral</h1>
           <div className="flex gap-2">
             <Popover open={isDateFilterOpen} onOpenChange={setIsDateFilterOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="border-[#d5c4aa] bg-transparent">
+                <Button variant="outline" className="border-[#d5c4aa] bg-white">
                   <CalendarIcon className="w-4 h-4 mr-2" />Data
                 </Button>
               </PopoverTrigger>
