@@ -47,9 +47,6 @@ function RelatorioChamadaContent() {
   const [students, setStudents] = useState<Student[]>([])
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({})
   
-  // ==================================================================
-  // MUDANÇA PRINCIPAL: Usamos um único estado para o status da UI
-  // ==================================================================
   const [uiStatus, setUiStatus] = useState<'loading' | 'success' | 'empty' | 'error'>('loading');
 
   const dateParam = searchParams.get("date")
@@ -64,7 +61,7 @@ function RelatorioChamadaContent() {
     
     const loadDataSequentially = async () => {
       try {
-        setUiStatus('loading'); // Sempre começa como 'loading'
+        setUiStatus('loading');
         
         const attendanceData = await getAttendance(dateParam)
 
