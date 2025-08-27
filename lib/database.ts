@@ -249,3 +249,34 @@ export async function deleteFile(bucket: "fotos_alunos" | "fotos_atividades", pa
   const { error } = await supabase.storage.from(bucket).remove([path])
   if (error) throw error
 }
+
+export type Reminder = {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  created_at: string;
+};
+
+// Buscar todos os reminders
+export async function getReminders() {
+  const { data, error } = await supabase
+    .from("reminders")
+    .select("*")
+    .order("date", { ascending: true });
+
+  if (error) throw error;
+  return data as Reminder[];
+}
+
+// Criar um novo reminder
+export async function createReminder(reminder: Omit<Reminder, "id" | "created_at">) {
+  const { data, error } = await supabase
+    .from("reminders")
+    .insert(reminder)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Reminder;
+}
