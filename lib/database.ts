@@ -1,6 +1,8 @@
-
 import { createClient } from "@/lib/supabase/client"
 import { ReactNode } from "react"
+import { subDays, format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { formatInTimeZone } from 'date-fns-tz'
 
 export interface Student {
   id: string
@@ -65,22 +67,25 @@ export interface Lend {
   updated_at: string
 }
 
+export type Reminder = {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  created_at: string;
+};
 
 const supabase = createClient()
-
 
 // Students
 export async function getStudents(): Promise<Student[]> {
   console.log("✅ 2. SERVIDOR: A função getStudents foi chamada!");
-
   try {
     const { data, error } = await supabase.from("students").select("*").order("name")
-    
     if (error) {
       console.error("❌ 3. SERVIDOR (FALHA): Ocorreu um erro no Supabase:", error);
       throw error;
     }
-
     console.log("✅ 4. SERVIDOR (SUCESSO): Alunos encontrados:", data.length);
     return data || [];
   } catch (error) {
@@ -172,11 +177,9 @@ export async function deleteActivity(id: string): Promise<void> {
 // Attendance
 export async function getAttendance(date?: string): Promise<Attendance[]> {
   let query = supabase.from("attendance").select("*")
-
   if (date) {
     query = query.eq("date", date)
   }
-
   const { data, error } = await query.order("created_at", { ascending: false })
   if (error) throw error
   return data || []
@@ -237,11 +240,9 @@ export async function uploadFile(
     upsert: false,
   })
   if (error) throw error
-
   const {
     data: { publicUrl },
   } = supabase.storage.from(bucket).getPublicUrl(data.path)
-
   return publicUrl
 }
 
@@ -250,16 +251,8 @@ export async function deleteFile(bucket: "fotos_alunos" | "fotos_atividades", pa
   if (error) throw error
 }
 
-export type Reminder = {
-  id: string;
-  title: string;
-  description?: string;
-  date: string;
-  created_at: string;
-};
-
-// Buscar todos os reminders
-export async function getReminders() {
+// Reminders
+export async function getReminders(): Promise<Reminder[]> {
   const { data, error } = await supabase
     .from("reminders")
     .select("*")
@@ -269,8 +262,7 @@ export async function getReminders() {
   return data as Reminder[];
 }
 
-// Criar um novo reminder
-export async function createReminder(reminder: Omit<Reminder, "id" | "created_at">) {
+export async function createReminder(reminder: Omit<Reminder, "id" | "created_at">): Promise<Reminder> {
   const { data, error } = await supabase
     .from("reminders")
     .insert(reminder)
@@ -279,4 +271,66 @@ export async function createReminder(reminder: Omit<Reminder, "id" | "created_at
 
   if (error) throw error;
   return data as Reminder;
+}
+
+// ==================================================================
+// FUNÇÃO DO GRÁFICO (REAPLICADA COM A LÓGICA MAIS ROBUSTA)
+// ==================================================================
+export async function getWeeklyAttendanceSummary(): Promise<{ day: string; presences: number; absences: number; justified: number }[]> {
+  console.log("✅ Servidor: Buscando resumo de chamadas da semana...");
+
+  try {
+    // 1. Reutilizamos sua função existente para buscar os registros.
+    const allAttendanceData = await getAttendance(); 
+    console.log(`Encontrados ${allAttendanceData.length} registros de chamada no total para processar.`);
+    
+    // 2. Usamos um objeto simples para a contagem
+    const summary: { [date: string]: { presences: number; absences: number; justified: number } } = {};
+
+    // 3. Criamos os "potes" de contagem dinamicamente a partir dos dados recebidos
+    for (const record of allAttendanceData) {
+      // Se o pote para esta data ainda não existe, crie-o.
+      if (!summary[record.date]) {
+        summary[record.date] = { presences: 0, absences: 0, justified: 0 };
+      }
+
+      // 4. Adicionamos a contagem ao pote correto
+      const status = record.status.toLowerCase();
+      if (status === 'presente' || status === 'present') {
+        summary[record.date].presences++;
+      } else if (status === 'faltou' || status === 'absent') {
+        summary[record.date].absences++;
+      } else if (status === 'justificada' || status === 'justified') {
+        summary[record.date].justified++;
+      }
+    }
+
+    // 5. Transformamos o objeto em uma lista e ordenamos pela data mais recente
+    const sortedSummary = Object.entries(summary)
+      .map(([date, counts]) => ({
+        date: date,
+        ...counts,
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // 6. Pegamos apenas os 7 dias mais recentes que tiveram aula
+    const latest7DaysWithData = sortedSummary.slice(0, 7);
+
+    // 7. Formatamos para o gráfico
+    const chartData = latest7DaysWithData
+      .map(({ date, presences, absences, justified }) => ({
+        day: format(new Date(date + "T12:00:00Z"), "EEE", { locale: ptBR }).charAt(0).toUpperCase(),
+        presences,
+        absences,
+        justified,
+      }))
+      .reverse(); // Inverte para mostrar do mais antigo para o mais novo
+
+    console.log("✅ Servidor: Resumo da semana gerado com sucesso:", chartData);
+    return chartData;
+
+  } catch (error) {
+    console.error("❌ Erro geral na função getWeeklyAttendanceSummary:", error);
+    throw error;
+  }
 }
