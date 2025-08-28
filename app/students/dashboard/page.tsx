@@ -226,7 +226,7 @@
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="bg-white/90 backdrop-blur-sm">
+          <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
             <CardHeader><CardTitle className="text-[#7f6e62]">Calendário</CardTitle></CardHeader>
             <CardContent>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
@@ -269,7 +269,7 @@
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm">
+          <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-[#7f6e62]">Atividade do dia</CardTitle>
               <Button size="sm" variant="outline" onClick={() => setIsActivityDetailOpen(true)} className="border-[#88957d] text-[#88957d] hover:bg-[#88957d] hover:text-white"><Edit className="w-4 h-4 mr-1" />Editar</Button>
@@ -288,7 +288,7 @@
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm">
+          <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-[#7f6e62]">Lembretes</CardTitle>
               <Dialog open={isAddReminderOpen} onOpenChange={setIsAddReminderOpen}>
@@ -333,13 +333,13 @@
                 <div className="space-y-3">
                   {reminders.map((r) => (
                     <div key={r.id} className="p-3 rounded-md border border-gray-200">
-                      <h4 className="font-medium text-[#7f6e62]">{r.title}</h4>
+                      <h4 className="line-clamp-1 max-w-[28rem] font-medium text-[#7f6e62]">{r.title}</h4>
                       {r.date && (
                         <p className="text-xs text-gray-500">
                           {format(new Date(r.date), "dd 'de' MMMM", { locale: ptBR })}
                         </p>
                       )}
-                      {r.description && <p className="text-sm text-gray-600 mt-1">{r.description}</p>}
+                      {r.description && <p className="line-clamp-1 max-w-[28rem] text-sm text-gray-600 mt-1">{r.description}</p>}
                     </div>
                   ))}
                 </div>
