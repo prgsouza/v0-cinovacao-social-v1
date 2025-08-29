@@ -96,12 +96,12 @@ export default function LendsTab({
       <div className="flex justify-end">
         <Dialog open={isAddLendOpen} onOpenChange={setIsAddLendOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#d09c91] hover:bg-[#b8877e] flex items-center gap-2">
+            <Button className="bg-[#124F32] hover:bg-[#124F32] flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Registrar Empréstimo
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[800px]"> 
             <DialogHeader>
               <DialogTitle>Registrar Empréstimo</DialogTitle>
             </DialogHeader>
@@ -111,116 +111,116 @@ export default function LendsTab({
                 const formData = new FormData(e.currentTarget);
                 handleAddLend(formData);
               }}
-              className="grid gap-4 py-4"
+              className="grid gap-6 py-4"
             >
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Material
-                </label>
-                <select
-                  name="material-id"
-                  required
-                  className="input border rounded p-2"
-                  value={selectedMaterialId ?? ""}
-                  onChange={handleMaterialChange}
-                >
-                  {materials.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} (Qtd: {m.quantity})
-                    </option>
-                  ))}
-                </select>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Material</label>
+                  <select
+                    name="material-id"
+                    required
+                    className="input border rounded p-2"
+                    value={selectedMaterialId ?? ""}
+                    onChange={handleMaterialChange}
+                  >
+                    {materials.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} (Qtd: {m.quantity})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Quantidade</label>
+                  <input
+                    name="quantity"
+                    type="number"
+                    min={1}
+                    max={selectedMaterial?.quantity || 1}
+                    placeholder="Quantidade"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    required
+                    className="input p-2 border rounded"
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Quantidade
-                </label>
-                <input
-                  name="quantity"
-                  type="number"
-                  min={1}
-                  max={selectedMaterial?.quantity || 1}
-                  placeholder="Quantidade"
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  required
-                  className="input p-2 border rounded"
-                />
+
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Solicitante</label>
+                  <input
+                    name="borrower"
+                    placeholder="Digite o nome do solicitante"
+                    required
+                    className="input border rounded p-2"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Data da Entrega</label>
+                  <input
+                    type="date"
+                    id="delivery-date"
+                    name="delivery-date"
+                    required
+                    onChange={handleDeliveryDateChange}
+                    className="input border rounded p-2"
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Solicitante
-                </label>
-                <input
-                  name="borrower"
-                  placeholder="Digite o nome do solicitante"
-                  required
-                  className="input border rounded p-2"
-                />
+
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Data de Devolução</label>
+                  <input
+                    type="date"
+                    id="return-date"
+                    name="return-date"
+                    required
+                    min={deliveryDate}
+                    disabled={!deliveryDate}
+                    className="input border rounded p-2"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Autorizado por</label>
+                  <input
+                    name="authorized-by"
+                    placeholder="Digite o nome de quem autorizou"
+                    required
+                    className="input border rounded p-2"
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Data da Entrega
-                </label>
-                <input
-                  type="date"
-                  id="delivery-date"
-                  name="delivery-date"
-                  required
-                  onChange={handleDeliveryDateChange}
-                  className="input border rounded p-2"
-                />
+
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-gray-700">Entregue por</label>
+                  <input
+                    name="delivered-by"
+                    placeholder="Digite o nome de quem entregou"
+                    required
+                    className="input border rounded p-2"
+                  />
+                </div>
+                <div className="grid gap-2 sm:col-span-1">
+                  <label className="text-sm font-medium text-gray-700">Descrição</label>
+                  <textarea
+                    rows={3}
+                    name="description"
+                    placeholder="Digite a descrição"
+                    required
+                    className="input border rounded p-2 h-[100px]"
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Data de Devolução
-                </label>
-                <input
-                  type="date"
-                  id="return-date"
-                  name="return-date"
-                  required
-                  min={deliveryDate}
-                  disabled={!deliveryDate}
-                  className="input border rounded p-2"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Descrição
-                </label>
-                <textarea
-                  rows={3}
-                  cols={30}
-                  name="description"
-                  placeholder="Digite a descrição"
-                  required
-                  className="input border rounded p-2"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Entregue por
-                </label>
-                <input
-                  name="delivered-by"
-                  placeholder="Digite o nome do de quem entregou"
-                  required
-                  className="input border rounded p-2"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Autorizado por
-                </label>
-                <input
-                  name="authorized-by"
-                  placeholder="Digite o nome de quem autorizou"
-                  required
-                  className="input border rounded p-2"
-                />
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
+
+              
+              <div className="flex justify-end gap-2 mt-6">
                 <Button
                   type="button"
                   variant="outline"
@@ -228,10 +228,7 @@ export default function LendsTab({
                 >
                   Cancelar
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-[#d09c91] hover:bg-[#b8877e]"
-                >
+                <Button type="submit" className="bg-[#124F32] hover:bg-[#124F32]">
                   Registrar
                 </Button>
               </div>
