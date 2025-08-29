@@ -60,6 +60,7 @@ export default function DashboardPage() {
   const [isEditingReminder, setIsEditingReminder] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
   const [reminderToDelete, setReminderToDelete] = useState<Reminder | null>(null);
+  const [isActivityDialogOpen, setIsActivityDialogOpen] = useState(false);
 
   const selectedDateString = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
@@ -332,94 +333,51 @@ export default function DashboardPage() {
         <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-[#7f6e62]">Atividades</CardTitle>
-            <Dialog open={isActivityDetailOpen} onOpenChange={setIsActivityDetailOpen}>
+
+            <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-[#88957d] hover:bg-[#7f6e62]">
+                  <Plus className="w-4 h-4 mr-2" />Novo
+                </Button>
+              </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                  <DialogTitle>{isEditingActivity ? "Editar Atividade" : "Detalhes da Atividade"}</DialogTitle>
+                  <DialogTitle>Criar Atividade</DialogTitle>
                 </DialogHeader>
-
-                {selectedActivity && (
-                  isEditingActivity ? (
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.currentTarget);
-
-                      // Pega valores do formulário
-                      const updates = {
-                        title: formData.get("activity-title") as string,
-                        responsible: formData.get("responsible") as string,
-                        spots: Number(formData.get("spots")),
-                        description: formData.get("activity-description") as string,
-                      };
-
-                      try {
-                        // Atualiza no banco usando a função correta
-                        const updatedActivity = await updateActivity(selectedActivity.id, updates);
-
-                        // Atualiza o estado local
-                        setActivities((prev) =>
-                          prev.map((a) => (a.id === selectedActivity.id ? updatedActivity : a))
-                        );
-
-                        setIsEditingActivity(false);
-                        setIsActivityDetailOpen(false);
-                        showSuccess("Atividade atualizada com sucesso!");
-                      } catch (err) {
-                        showError("Erro ao atualizar atividade");
-                      }
-                    }}>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="activity-title">Título da Atividade</Label>
-                          <Input id="activity-title" name="activity-title" defaultValue={selectedActivity.title} required />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="responsible">Responsável</Label>
-                          <Input id="responsible" name="responsible" defaultValue={selectedActivity.responsible} required />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="spots">Vagas</Label>
-                          <Input id="spots" name="spots" type="number" defaultValue={selectedActivity.spots} required />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="activity-description">Descrição</Label>
-                          <Textarea id="activity-description" name="activity-description" defaultValue={selectedActivity.description} required />
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" type="button" onClick={() => setIsEditingActivity(false)}>Cancelar</Button>
-                        <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar Alterações</Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden">
-                        <Image src={selectedActivity.photo_url || "/computer-classroom.png"} alt="Atividade" width={400} height={192} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="font-medium">Responsável</Label>
-                          <p className="text-sm text-gray-600">{selectedActivity.responsible}</p>
-                        </div>
-                        <div>
-                          <Label className="font-medium">Vagas</Label>
-                          <p className="text-sm text-gray-600">{selectedActivity.spots} vagas disponíveis</p>
-                        </div>
-                        <div>
-                          <Label className="font-medium">Descrição</Label>
-                          <p className="text-sm text-gray-600">{selectedActivity.description}</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setIsActivityDetailOpen(false)}>Fechar</Button>
-                        <Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingActivity(true)}>
-                          <Edit className="w-4 h-4 mr-2" />Editar
-                        </Button>
-                      </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    handleAddActivity(formData);
+                  }}
+                >
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="activity-title">Título da Atividade</Label>
+                      <Input id="activity-title" name="activity-title" placeholder="Título" required />
                     </div>
-                  )
-                )}
+                    <div className="grid gap-2">
+                      <Label htmlFor="responsible">Responsável</Label>
+                      <Input id="responsible" name="responsible" placeholder="Nome do responsável" required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="spots">Vagas</Label>
+                      <Input id="spots" name="spots" type="number" placeholder="Número de vagas" required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="activity-description">Descrição</Label>
+                      <Textarea id="activity-description" name="activity-description" placeholder="Detalhes" required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="activity-photo">Foto</Label>
+                      <Input id="activity-photo" name="activity-photo" type="file" accept="image/*" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button>
+                    <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar</Button>
+                  </div>
+                </form>
               </DialogContent>
             </Dialog>
           </CardHeader>
