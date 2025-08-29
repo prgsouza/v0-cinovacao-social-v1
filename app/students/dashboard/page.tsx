@@ -140,14 +140,24 @@ export default function DashboardPage() {
 
   const handleEditActivity = async (formData: FormData) => {
     try {
+      if (!selectedActivity) {
+        showError("Nenhuma atividade selecionada para edição")
+        return
+      }
+
       const updates = {
         title: formData.get("activity-title") as string,
         responsible: formData.get("responsible") as string,
         spots: Number.parseInt(formData.get("spots") as string),
         description: formData.get("activity-description") as string,
       }
-      const updatedActivity = await updateActivity(todayActivity.id || "", updates)
-      setActivities(activities.map((a) => (a.id === (todayActivity.id || "") ? updatedActivity : a)))
+
+      const updatedActivity = await updateActivity(selectedActivity.id, updates)
+
+      setActivities(activities.map((a) =>
+        a.id === selectedActivity.id ? updatedActivity : a
+      ))
+
       setIsEditingActivity(false)
       setIsActivityDetailOpen(false)
       showSuccess("Atividade atualizada com sucesso!")

@@ -192,18 +192,20 @@ export async function createActivity(
   return data;
 }
 
-export async function updateActivity(
-  id: string,
-  updates: Partial<Activity>
-): Promise<Activity> {
+export async function updateActivity(id: string, updates: Partial<Activity>): Promise<Activity> {
   const { data, error } = await supabase
     .from("activities")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", id)
+    .update(updates)
+    .eq("id", id) // aqui precisa ser o id real da atividade
     .select()
-    .single();
-  if (error) throw error;
-  return data;
+    .single()
+
+  if (error) {
+    console.error("❌ Erro ao atualizar atividade:", error)
+    throw error
+  }
+
+  return data as Activity
 }
 
 export async function deleteActivity(id: string): Promise<void> {
