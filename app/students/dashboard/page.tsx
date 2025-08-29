@@ -53,6 +53,10 @@ export default function DashboardPage() {
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
   const [reminders, setReminders] = useState<Reminder[]>([])
   const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
+  const [isReminderDetailOpen, setIsReminderDetailOpen] = useState(false);
+  const [isEditingReminder, setIsEditingReminder] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+  const [reminderToDelete, setReminderToDelete] = useState<Reminder | null>(null);
 
   const selectedDateString = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
@@ -168,6 +172,37 @@ export default function DashboardPage() {
       setIsAddReminderOpen(false);
     } catch (error) {
       showError("Erro ao criar lembrete");
+    }
+  };
+
+  const handleEditReminder = async (formData: FormData) => {
+    try {
+      if (!selectedReminder) return;
+      const updates = {
+        title: formData.get("reminder-title") as string,
+        description: formData.get("reminder-description") as string,
+        date: formData.get("reminder-date") as string,
+      };
+      const { updateReminder } = await import("@/lib/database"); // garante que usa a função correta
+      const updated = await updateReminder(selectedReminder.id, updates);
+      setReminders(reminders.map((r) => (r.id === selectedReminder.id ? updated : r)));
+      showSuccess("Lembrete atualizado!");
+      setIsEditingReminder(false);
+      setIsReminderDetailOpen(false);
+    } catch (error) {
+      showError("Erro ao editar lembrete");
+    }
+  };
+
+  const handleDeleteReminder = async (id: string) => {
+    if (!confirm("Deseja realmente excluir este lembrete?")) return;
+    try {
+      const { deleteReminder } = await import("@/lib/database");
+      await deleteReminder(id);
+      setReminders(reminders.filter((r) => r.id !== id));
+      showSuccess("Lembrete excluído!");
+    } catch (error) {
+      showError("Erro ao excluir lembrete");
     }
   };
 
@@ -316,29 +351,80 @@ export default function DashboardPage() {
                     <div className="grid gap-2"><Label htmlFor="reminder-description">Descrição</Label><Textarea id="reminder-description" name="reminder-description" /></div>
                     <div className="grid gap-2"><Label htmlFor="reminder-date">Data</Label><Input id="reminder-date" name="reminder-date" type="date" required /></div>
                   </div>
-                  <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsAddReminderOpen(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar</Button></div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" type="button" onClick={() => setIsAddReminderOpen(false)}>Cancelar</Button>
+                    <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar</Button>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>
           </CardHeader>
+
           <CardContent>
             {reminders.length === 0 ? (
               <p className="text-sm text-gray-600">Nenhum lembrete criado ainda.</p>
             ) : (
               <div className="space-y-3">
                 {reminders.map((r) => (
-                  <div key={r.id} className="p-3 rounded-md border border-gray-200">
-                    <h4 className="line-clamp-1 max-w-[28rem] font-medium text-[#7f6e62]">{r.title}</h4>
-                    {r.date && (
-                      <p className="text-xs text-gray-500">{format(new Date(r.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</p>
-                    )}
-                    {r.description && <p className="line-clamp-1 max-w-[28rem] text-sm text-gray-600 mt-1">{r.description}</p>}
+                  <div key={r.id} className="p-3 rounded-md border border-gray-200 flex flex-col gap-2">
+                    <div
+                      onClick={() => { setSelectedReminder(r); setIsReminderDetailOpen(true); }}
+                      className="cursor-pointer"
+                    >
+                      <h4 className="font-medium text-[#7f6e62] line-clamp-5 mt-1 mb-2">{r.title}</h4>
+                      {r.date && (
+                        <p className="text-xs text-gray-500">{format(new Date(r.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</p>
+                      )}
+                      {r.description && (
+                        <p className="text-sm text-gray-600 line-clamp-5 mt-1 mb-2">{r.description}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" variant="outline" onClick={() => { setSelectedReminder(r); setIsEditingReminder(true); setIsReminderDetailOpen(true); }}>Editar</Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setReminderToDelete(r)}
+                      >
+                        Excluir
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+        <Dialog open={!!reminderToDelete} onOpenChange={(open) => { if (!open) setReminderToDelete(null); }}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Confirmar Exclusão</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p>Deseja realmente excluir o lembrete <strong>{reminderToDelete?.title}</strong>?</p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setReminderToDelete(null)}>Cancelar</Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={async () => {
+                  if (!reminderToDelete) return;
+                  try {
+                    const { deleteReminder } = await import("@/lib/database");
+                    await deleteReminder(reminderToDelete.id);
+                    setReminders(reminders.filter(r => r.id !== reminderToDelete.id));
+                    showSuccess("Lembrete excluído!");
+                    setReminderToDelete(null);
+                  } catch {
+                    showError("Erro ao excluir lembrete");
+                  }
+                }}
+              >
+                Excluir
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Dialog open={isActivityDetailOpen} onOpenChange={setIsActivityDetailOpen}>
@@ -363,6 +449,37 @@ export default function DashboardPage() {
                 <div><Label className="font-medium">Descrição</Label><p className="text-sm text-gray-600">{todayActivity.description}</p></div>
               </div>
               <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setIsActivityDetailOpen(false)}>Fechar</Button><Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingActivity(true)}><Edit className="w-4 h-4 mr-2" />Editar</Button></div>
+            </div>
+          ))}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isReminderDetailOpen} onOpenChange={setIsReminderDetailOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{isEditingReminder ? "Editar Lembrete" : "Detalhes do Lembrete"}</DialogTitle>
+          </DialogHeader>
+
+          {selectedReminder && (isEditingReminder ? (
+            <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleEditReminder(formData); }}>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2"><Label htmlFor="reminder-title">Título</Label><Input id="reminder-title" name="reminder-title" defaultValue={selectedReminder.title} required /></div>
+                <div className="grid gap-2"><Label htmlFor="reminder-description">Descrição</Label><Textarea id="reminder-description" name="reminder-description" defaultValue={selectedReminder.description || ""} /></div>
+                <div className="grid gap-2"><Label htmlFor="reminder-date">Data</Label><Input id="reminder-date" name="reminder-date" type="date" defaultValue={selectedReminder.date} required /></div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" type="button" onClick={() => setIsEditingReminder(false)}>Cancelar</Button>
+                <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar Alterações</Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <div><Label className="font-medium">Título</Label><p className="text-sm text-gray-600">{selectedReminder.title}</p></div>
+              {selectedReminder.date && <div><Label className="font-medium">Data</Label><p className="text-sm text-gray-600">{format(new Date(selectedReminder.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</p></div>}
+              {selectedReminder.description && <div><Label className="font-medium">Descrição</Label><p className="text-sm text-gray-600">{selectedReminder.description}</p></div>}
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsReminderDetailOpen(false)}>Fechar</Button>
+                <Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingReminder(true)}>Editar</Button>
+              </div>
             </div>
           ))}
         </DialogContent>
