@@ -46,8 +46,11 @@ export default function DashboardPage() {
   const [chartData, setChartData] = useState([])
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false)
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
   const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false)
   const [isEditingActivity, setIsEditingActivity] = useState(false)
+  const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null)
+  const [isDeleteActivityConfirmOpen, setIsDeleteActivityConfirmOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [dateRange, setDateRange] = useState({ start: "", end: "" })
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
@@ -227,18 +230,29 @@ export default function DashboardPage() {
             </PopoverContent>
           </Popover>
           <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
-            <DialogTrigger asChild><Button className="bg-[#88957d] hover:bg-[#7f6e62]"><Plus className="w-4 h-4 mr-2" />Atividade</Button></DialogTrigger>
+            <DialogTrigger asChild>
+              <Button className="bg-[#88957d] hover:bg-[#7f6e62]">
+                <Plus className="w-4 h-4 mr-2" />Atividade
+              </Button>
+            </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader><DialogTitle>Criar Evento/Atividade</DialogTitle></DialogHeader>
-              <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleAddActivity(formData); }}>
+              <form onSubmit={(e) => { 
+                e.preventDefault(); 
+                const formData = new FormData(e.currentTarget); 
+                handleAddActivity(formData); 
+              }}>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2"><Label htmlFor="activity-title">Título da Atividade</Label><Input id="activity-title" name="activity-title" placeholder="Título da atividade" required /></div>
-                  <div className="grid gap-2"><Label htmlFor="responsible">Responsável pela Atividade</Label><Input id="responsible" name="responsible" placeholder="Nome do responsável" required /></div>
-                  <div className="grid gap-2"><Label htmlFor="spots">Quantidade de Vagas</Label><Input id="spots" name="spots" type="number" placeholder="Número de vagas" required /></div>
+                  <div className="grid gap-2"><Label htmlFor="responsible">Responsável</Label><Input id="responsible" name="responsible" placeholder="Nome do responsável" required /></div>
+                  <div className="grid gap-2"><Label htmlFor="spots">Vagas</Label><Input id="spots" name="spots" type="number" placeholder="Número de vagas" required /></div>
                   <div className="grid gap-2"><Label htmlFor="activity-description">Descrição</Label><Textarea id="activity-description" name="activity-description" placeholder="Detalhes sobre a atividade" required /></div>
-                  <div className="grid gap-2"><Label htmlFor="activity-photo">Foto da Atividade</Label><div className="flex items-center gap-2"><Input id="activity-photo" name="activity-photo" type="file" accept="image/*" /><Camera className="w-5 h-5 text-gray-400" /></div></div>
+                  <div className="grid gap-2"><Label htmlFor="activity-photo">Foto</Label><Input id="activity-photo" name="activity-photo" type="file" accept="image/*" /></div>
                 </div>
-                <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar Atividade</Button></div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button>
+                  <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar Atividade</Button>
+                </div>
               </form>
             </DialogContent>
           </Dialog>
@@ -317,20 +331,142 @@ export default function DashboardPage() {
 
         <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-[#7f6e62]">Atividade do dia</CardTitle>
-            <Button size="sm" variant="outline" onClick={() => setIsActivityDetailOpen(true)} className="border-[#88957d] text-[#88957d] hover:bg-[#88957d] hover:text-white"><Edit className="w-4 h-4 mr-1" />Editar</Button>
+            <CardTitle className="text-[#7f6e62]">Atividades</CardTitle>
+            <Dialog open={isActivityDetailOpen} onOpenChange={setIsActivityDetailOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>{isEditingActivity ? "Editar Atividade" : "Detalhes da Atividade"}</DialogTitle>
+                </DialogHeader>
+
+                {selectedActivity && (
+                  isEditingActivity ? (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+
+                      // Pega valores do formulário
+                      const updates = {
+                        title: formData.get("activity-title") as string,
+                        responsible: formData.get("responsible") as string,
+                        spots: Number(formData.get("spots")),
+                        description: formData.get("activity-description") as string,
+                      };
+
+                      try {
+                        // Atualiza no banco usando a função correta
+                        const updatedActivity = await updateActivity(selectedActivity.id, updates);
+
+                        // Atualiza o estado local
+                        setActivities((prev) =>
+                          prev.map((a) => (a.id === selectedActivity.id ? updatedActivity : a))
+                        );
+
+                        setIsEditingActivity(false);
+                        setIsActivityDetailOpen(false);
+                        showSuccess("Atividade atualizada com sucesso!");
+                      } catch (err) {
+                        showError("Erro ao atualizar atividade");
+                      }
+                    }}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="activity-title">Título da Atividade</Label>
+                          <Input id="activity-title" name="activity-title" defaultValue={selectedActivity.title} required />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="responsible">Responsável</Label>
+                          <Input id="responsible" name="responsible" defaultValue={selectedActivity.responsible} required />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="spots">Vagas</Label>
+                          <Input id="spots" name="spots" type="number" defaultValue={selectedActivity.spots} required />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="activity-description">Descrição</Label>
+                          <Textarea id="activity-description" name="activity-description" defaultValue={selectedActivity.description} required />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" type="button" onClick={() => setIsEditingActivity(false)}>Cancelar</Button>
+                        <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar Alterações</Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden">
+                        <Image src={selectedActivity.photo_url || "/computer-classroom.png"} alt="Atividade" width={400} height={192} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="font-medium">Responsável</Label>
+                          <p className="text-sm text-gray-600">{selectedActivity.responsible}</p>
+                        </div>
+                        <div>
+                          <Label className="font-medium">Vagas</Label>
+                          <p className="text-sm text-gray-600">{selectedActivity.spots} vagas disponíveis</p>
+                        </div>
+                        <div>
+                          <Label className="font-medium">Descrição</Label>
+                          <p className="text-sm text-gray-600">{selectedActivity.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsActivityDetailOpen(false)}>Fechar</Button>
+                        <Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingActivity(true)}>
+                          <Edit className="w-4 h-4 mr-2" />Editar
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                )}
+              </DialogContent>
+            </Dialog>
           </CardHeader>
+
           <CardContent>
-            <div className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors" onClick={() => setIsActivityDetailOpen(true)}>
-              <div className="flex gap-4">
-                <div className="w-24 h-16 bg-gray-200 rounded-lg overflow-hidden"><Image src="/computer-classroom.png" alt="Atividade" width={96} height={64} className="w-full h-full object-cover" /></div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-[#7f6e62] mb-1">{todayActivity.title}</h4>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{todayActivity.description}</p>
-                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#88957d] rounded-full"></div><span className="text-sm font-medium">{todayActivity.responsible}</span></div>
-                </div>
+            {activities.length === 0 ? (
+              <p className="text-sm text-gray-600">Nenhuma atividade criada ainda.</p>
+            ) : (
+              <div className="space-y-3">
+                {activities.map((a) => (
+                  <div key={a.id} className="p-4 rounded-md border border-gray-200 flex justify-between items-start min-[6rem]">
+                    {/* Clique abre detalhes */}
+                    <div
+                      onClick={() => { setSelectedActivity(a); setIsActivityDetailOpen(true); setIsEditingActivity(false); }}
+                      className="cursor-pointer flex-1 flex gap-3"
+                    >
+                      <div className="w-28 h-20 bg-gray-200 rounded-lg overflow-hidden">
+                        <Image src={a.photo_url || "/computer-classroom.png"} alt="Atividade" width={96} height={64} className="w-full h-full object-cover"/>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="line-clamp-2 lg:line-clamp-3 font-medium text-[#7f6e62]">{a.title}</h4>
+                        {a.date && <p className="text-xs text-gray-500">{format(new Date(a.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</p>}
+                        {a.description && <p className="line-clamp-3 lg:line-clamp-4 text-sm text-gray-600 mt-1">{a.description}</p>}
+                        {a.responsible && <p className="text-sm font-medium text-[#7f6e62] mt-1">{a.responsible}</p>}
+                      </div>
+                    </div>
+                    {/* Botões de ação */}
+                    <div className="flex gap-2 ml-2 mt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => { setSelectedActivity(a); setIsEditingActivity(true); setIsActivityDetailOpen(true); }}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setActivityToDelete(a)}
+                      >
+                        Excluir
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div >
+            )}
           </CardContent>
         </Card>
 
@@ -453,6 +589,37 @@ export default function DashboardPage() {
           ))}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!activityToDelete} onOpenChange={(open) => { if (!open) setActivityToDelete(null); }}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Deseja realmente excluir a atividade <strong>{activityToDelete?.title}</strong>?</p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setActivityToDelete(null)}>Cancelar</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={async () => {
+                if (!activityToDelete) return;
+                try {
+                  await import("@/lib/database").then(({ deleteActivity }) => deleteActivity(activityToDelete.id))
+                  setActivities(activities.filter(a => a.id !== activityToDelete.id))
+                  showSuccess("Atividade excluída!");
+                  setActivityToDelete(null);
+                } catch {
+                  showError("Erro ao excluir atividade");
+                }
+              }}
+            >
+              Excluir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isReminderDetailOpen} onOpenChange={setIsReminderDetailOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>

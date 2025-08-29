@@ -174,6 +174,30 @@ export async function deleteActivity(id: string): Promise<void> {
   if (error) throw error
 }
 
+export async function uploadActivityPhoto(file: File, path: string): Promise<string> {
+  return uploadFile(file, "fotos_atividades", path);
+}
+
+export async function getActivitiesByResponsible(responsible: string): Promise<Activity[]> {
+  const { data, error } = await supabase
+    .from("activities")
+    .select("*")
+    .eq("responsible", responsible)
+    .order("date", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getActivitiesByDate(date: string): Promise<Activity[]> {
+  const { data, error } = await supabase
+    .from("activities")
+    .select("*")
+    .eq("date", date)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
 // Attendance
 export async function getAttendance(date?: string): Promise<Attendance[]> {
   let query = supabase.from("attendance").select("*")
