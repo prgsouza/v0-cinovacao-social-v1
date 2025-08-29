@@ -366,20 +366,22 @@ export async function getReminders(): Promise<Reminder[]> {
 export async function createReminder(
   reminder: Omit<Reminder, "id" | "created_at">
 ): Promise<Reminder> {
-  const { data, error } = await supabase
-    .from("reminders")
-    .insert(reminder)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("reminders")
+      .insert(reminder)
+      .select()
+      .single();
+
     if (error) {
-      console.error("❌ Erro ao criar lembrete:", error)
-      throw error
+      console.error("❌ Erro ao criar lembrete:", error);
+      throw error;
     }
 
-    return data as Reminder
+    return data as Reminder;
   } catch (error) {
-    console.error("❌ ERRO GERAL na função createReminder:", error)
-    throw error
+    console.error("❌ ERRO GERAL na função createReminder:", error);
+    throw error;
   }
 }
 
