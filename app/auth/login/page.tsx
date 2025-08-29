@@ -21,19 +21,27 @@ export default async function LoginPage() {
   const supabase = await createClient()
 
   if (supabase) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-      if (session) {
-        redirect("/")
-      }
+    if (session) {
+      redirect("/")
+    }
   }
 
   return (
     <PageContainer>
-      <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
+      <div
+        className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
+        style={{
+          backgroundImage: "url('/images/plano-de-fundo-login.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="w-full max-w-md space-y-8 bg-white/80 p-8 rounded-lg shadow-lg">
           <div className="text-center">
             <Image
               src="/images/gris-logo.png"

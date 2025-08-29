@@ -17,7 +17,7 @@ function SubmitButton() {
     <Button
       type="submit"
       disabled={pending}
-      className="w-full bg-[#88957d] hover:bg-[#7f6e62] text-white py-6 text-lg font-medium rounded-lg h-[60px]"
+      className="w-full bg-[#217E53] hover:bg-[#FBB600] text-white py-6 text-lg font-medium rounded-lg h-[60px]"
     >
       {pending ? (
         <>
@@ -45,8 +45,8 @@ export default function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-[#7f6e62]">Bem-vindo de volta</h1>
-        <p className="text-lg text-gray-600">Entre na sua conta do GRIS</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-[#FBB600]">Bem-vindo de volta</h1>
+        <p className="text-lg text-[#FBB600]">Entre na sua conta do GRIS</p>
       </div>
 
       <form action={formAction} className="space-y-6">
@@ -56,7 +56,7 @@ export default function LoginForm() {
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-[#7f6e62]">
+            <label htmlFor="email" className="block text-sm font-medium text-[#FBB600]">
               Email
             </label>
             <Input
@@ -69,7 +69,7 @@ export default function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-[#7f6e62]">
+            <label htmlFor="password" className="block text-sm font-medium text-[#FBB600]">
               Senha
             </label>
             <Input
@@ -84,12 +84,6 @@ export default function LoginForm() {
 
         <SubmitButton />
 
-        <div className="text-center text-gray-600">
-          Não tem uma conta?{" "}
-          <Link href="/auth/sign-up" className="text-[#88957d] hover:underline">
-            Cadastre-se
-          </Link>
-        </div>
       </form>
     </div>
   )
