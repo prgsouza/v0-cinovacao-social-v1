@@ -207,7 +207,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-[#7f6e62]">Visão Geral</h1>
         <div className="flex gap-2">
