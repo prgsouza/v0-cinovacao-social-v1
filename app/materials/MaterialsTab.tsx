@@ -153,7 +153,7 @@ export default function MaterialsTab({ materials, setMaterials }: MaterialsTabPr
         </div>
         <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#88957d] hover:bg-[#7f6e62]">
+            <Button className="bg-[#124F32] hover:bg-[#7f6e62]">
               <Plus className="w-4 h-4 mr-2" />
               Cadastrar Material
             </Button>
@@ -204,7 +204,7 @@ export default function MaterialsTab({ materials, setMaterials }: MaterialsTabPr
                 <Button type="button" variant="outline" onClick={() => setIsAddMaterialOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">
+                <Button type="submit" className="bg-[#124F32] hover:bg-[#7f6e62]">
                   Cadastrar
                 </Button>
               </div>

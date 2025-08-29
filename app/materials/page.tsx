@@ -2,26 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NavigationHeader } from "@/components/navigation-header";
-import { PageContainer } from "@/components/page-container";
-import { useNotification } from "@/hooks/use-notification";
-import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import MaterialsTab from "./MaterialsTab";
 import LendsTab from "./LendsTab";
 import Loading from "./loading";
+import MaterialsLayout from "./MaterialsLayout";
 
-import {
-  getMaterials,
-  getLends,
-  type Material,
-  type Lend,
-} from "@/lib/database";
+import { getMaterials, getLends, type Material, type Lend } from "@/lib/database";
 
 export default function MaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [lends, setLends] = useState<Lend[]>([]);
   const [loading, setLoading] = useState(true);
-  const { showError } = useNotification();
+  const [activeTab, setActiveTab] = useState<"materials" | "lends">("materials");
 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -38,15 +30,11 @@ export default function MaterialsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [materialsData, lendsData] = await Promise.all([
-          getMaterials(),
-          getLends(),
-        ]);
+        const [materialsData, lendsData] = await Promise.all([getMaterials(), getLends()]);
         setMaterials(materialsData);
         setLends(lendsData);
       } catch (error) {
         console.error(error);
-        showError("Erro ao carregar dados do banco");
       } finally {
         setLoading(false);
       }
@@ -57,25 +45,9 @@ export default function MaterialsPage() {
   if (loading) return <Loading />;
 
   return (
-    <PageContainer>
-      <NavigationHeader title="Gestão de Materiais" />
+    <MaterialsLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="materials" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/90 backdrop-blur-sm">
-            <TabsTrigger
-              value="materials"
-              className="data-[state=active]:bg-[#88957d] data-[state=active]:text-white"
-            >
-              Materiais
-            </TabsTrigger>
-            <TabsTrigger
-              value="lends"
-              className="data-[state=active]:bg-[#d09c91] data-[state=active]:text-white"
-            >
-              Empréstimos Solidários
-            </TabsTrigger>
-          </TabsList>
-
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "materials" | "lends")} className="w-full">
           <TabsContent value="materials">
             <MaterialsTab
               materials={materials}
@@ -96,6 +68,6 @@ export default function MaterialsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </PageContainer>
+    </MaterialsLayout>
   );
 }
