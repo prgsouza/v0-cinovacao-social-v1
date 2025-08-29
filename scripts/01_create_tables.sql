@@ -64,6 +64,14 @@ CREATE TABLE IF NOT EXISTS lends (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+create table if not exists reminders (
+  id uuid default gen_random_uuid() primary key,
+  title varchar(255) not null,
+  description text,
+  date date not null,
+  created_at timestamp with time zone default now()
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_students_name ON students(name);
 CREATE INDEX IF NOT EXISTS idx_students_community ON students(community);
