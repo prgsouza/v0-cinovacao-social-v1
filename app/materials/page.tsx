@@ -6,14 +6,18 @@ import MaterialsTab from "./MaterialsTab";
 import LendsTab from "./LendsTab";
 import Loading from "./loading";
 import MaterialsLayout from "./MaterialsLayout";
-
-import { getMaterials, getLends, type Material, type Lend } from "@/lib/database";
+import { Lend } from "@/lib/lend/lend.dto";
+import { Material } from "@/lib/material/material.dto";
+import { getMaterials } from "@/lib/material/material.service";
+import { getLends } from "@/lib/lend/lend.service";
 
 export default function MaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [lends, setLends] = useState<Lend[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"materials" | "lends">("materials");
+  const [activeTab, setActiveTab] = useState<"materials" | "lends">(
+    "materials"
+  );
 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -30,7 +34,10 @@ export default function MaterialsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [materialsData, lendsData] = await Promise.all([getMaterials(), getLends()]);
+        const [materialsData, lendsData] = await Promise.all([
+          getMaterials(),
+          getLends(),
+        ]);
         setMaterials(materialsData);
         setLends(lendsData);
       } catch (error) {
@@ -47,7 +54,13 @@ export default function MaterialsPage() {
   return (
     <MaterialsLayout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "materials" | "lends")} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "materials" | "lends")
+          }
+          className="w-full"
+        >
           <TabsContent value="materials">
             <MaterialsTab
               materials={materials}

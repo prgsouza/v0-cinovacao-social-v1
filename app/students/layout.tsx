@@ -1,10 +1,10 @@
 // app/students/layout.tsx
 
-"use client"
+"use client";
 
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import {
   Sidebar,
   SidebarContent,
@@ -16,15 +16,27 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { PageContainer } from "@/components/page-container"
-import { LayoutDashboard, Users, UserCheck, Settings, HelpCircle, LogOut, Home } from "lucide-react"
+} from "@/components/ui/sidebar";
+import { PageContainer } from "@/components/page-container";
+import {
+  LayoutDashboard,
+  Users,
+  UserCheck,
+  Settings,
+  HelpCircle,
+  LogOut,
+  Home,
+} from "lucide-react";
 
 const sidebarItems = [
   {
     title: "MENU",
     items: [
-      { title: "Visão Geral", icon: LayoutDashboard, href: "/students/dashboard" },
+      {
+        title: "Visão Geral",
+        icon: LayoutDashboard,
+        href: "/students/dashboard",
+      },
       { title: "Alunos", icon: Users, href: "/students/alunos" },
       { title: "Chamadas", icon: UserCheck, href: "/students/chamadas" },
     ],
@@ -32,31 +44,46 @@ const sidebarItems = [
   {
     title: "GERAL",
     items: [
-      { title: "Configurações", icon: Settings, href: "/students/configuracoes" },
+      {
+        title: "Configurações",
+        icon: Settings,
+        href: "/students/configuracoes",
+      },
       { title: "Ajuda", icon: HelpCircle, href: "/students/ajuda" },
       { title: "Voltar ao Hub", icon: Home, href: "/" },
     ],
   },
-]
+];
 
-export default function StudentsLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
+export default function StudentsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
 
   return (
     <PageContainer>
       <SidebarProvider>
         <div className="flex w-full min-h-screen bg-gray-50">
-          
           <Sidebar className="bg-[#E6742D] backdrop-blur-sm border-r border-none">
             <SidebarContent className="bg-[#E6742D] text-white">
-              <div className="p-4 border-b flex justify-center border-b bg-[#E6742D]">
+              <div className="p-4 flex justify-center border-b bg-[#E6742D]">
                 <div className="">
-                  <Image src="/images/gris-logo.png" alt="GRIS Logo" width={130} height={75} className="pt-3 pr-4" />
+                  <Image
+                    src="/images/gris-logo.png"
+                    alt="GRIS Logo"
+                    width={130}
+                    height={75}
+                    className="pt-3 pr-4"
+                  />
                 </div>
               </div>
               {sidebarItems.map((group) => (
                 <SidebarGroup key={group.title} className="pl-4">
-                  <SidebarGroupLabel className="text-white text-[1.25rem] font-bold">{group.title}</SidebarGroupLabel>
+                  <SidebarGroupLabel className="text-white text-[1.25rem] font-bold">
+                    {group.title}
+                  </SidebarGroupLabel>
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {group.items.map((item) => (
@@ -80,7 +107,6 @@ export default function StudentsLayout({ children }: { children: React.ReactNode
                 </SidebarGroup>
               ))}
             </SidebarContent>
-            
           </Sidebar>
 
           <main className="flex-1 relative">
@@ -92,5 +118,5 @@ export default function StudentsLayout({ children }: { children: React.ReactNode
         </div>
       </SidebarProvider>
     </PageContainer>
-  )
+  );
 }

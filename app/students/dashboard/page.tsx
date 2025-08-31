@@ -18,7 +18,13 @@ import { format, isFuture, isToday, startOfDay } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import Image from "next/image"
 import { useNotification } from "@/hooks/use-notification"
-import { getActivities, createActivity, updateActivity, getAttendance, getReminders, createReminder, getWeeklyAttendanceSummary, type Activity, type Attendance, type Reminder} from "@/lib/database"
+import { Reminder } from '@/lib/reminder/reminder.dto'
+import { Attendance } from '@/lib/attendance/attendance.dto'
+import { getAttendance } from '@/lib/attendance/attendance.service'
+import { Activity } from '@/lib/activity/activity.dto'
+import { getWeeklyAttendanceSummary } from '@/lib/graph/graph.service'
+import { createReminder, getReminders } from '@/lib/reminder/reminder.service'
+import { getActivities, createActivity, updateActivity } from '@/lib/activity/activity.service'
 import { Separator } from "@/components/ui/separator"
 
 // Componente para o Tooltip customizado do gráfico
