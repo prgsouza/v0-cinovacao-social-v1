@@ -11,12 +11,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  type Material,
-  type Lend,
-  createLend,
-  updateLend,
-} from "@/lib/database";
+import { Material } from "@/lib/material/material.dto";
+import { Lend } from "@/lib/lend/lend.dto";
+import { createLend, updateLend } from "@/lib/lend/lend.service";
 import { useNotification } from "@/hooks/use-notification";
 import { Plus } from "lucide-react";
 
@@ -101,7 +98,7 @@ export default function LendsTab({
               Registrar Empréstimo
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px]"> 
+          <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
               <DialogTitle>Registrar Empréstimo</DialogTitle>
             </DialogHeader>
@@ -113,10 +110,11 @@ export default function LendsTab({
               }}
               className="grid gap-6 py-4"
             >
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Material</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Material
+                  </label>
                   <select
                     name="material-id"
                     required
@@ -132,7 +130,9 @@ export default function LendsTab({
                   </select>
                 </div>
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Quantidade</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Quantidade
+                  </label>
                   <input
                     name="quantity"
                     type="number"
@@ -147,10 +147,11 @@ export default function LendsTab({
                 </div>
               </div>
 
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Solicitante</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Solicitante
+                  </label>
                   <input
                     name="borrower"
                     placeholder="Digite o nome do solicitante"
@@ -159,7 +160,9 @@ export default function LendsTab({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Data da Entrega</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Data da Entrega
+                  </label>
                   <input
                     type="date"
                     id="delivery-date"
@@ -171,10 +174,11 @@ export default function LendsTab({
                 </div>
               </div>
 
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Data de Devolução</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Data de Devolução
+                  </label>
                   <input
                     type="date"
                     id="return-date"
@@ -186,7 +190,9 @@ export default function LendsTab({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Autorizado por</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Autorizado por
+                  </label>
                   <input
                     name="authorized-by"
                     placeholder="Digite o nome de quem autorizou"
@@ -196,10 +202,11 @@ export default function LendsTab({
                 </div>
               </div>
 
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Entregue por</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Entregue por
+                  </label>
                   <input
                     name="delivered-by"
                     placeholder="Digite o nome de quem entregou"
@@ -208,7 +215,9 @@ export default function LendsTab({
                   />
                 </div>
                 <div className="grid gap-2 sm:col-span-1">
-                  <label className="text-sm font-medium text-gray-700">Descrição</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Descrição
+                  </label>
                   <textarea
                     rows={3}
                     name="description"
@@ -219,7 +228,6 @@ export default function LendsTab({
                 </div>
               </div>
 
-              
               <div className="flex justify-end gap-2 mt-6">
                 <Button
                   type="button"
@@ -228,7 +236,10 @@ export default function LendsTab({
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" className="bg-[#124F32] hover:bg-[#124F32]">
+                <Button
+                  type="submit"
+                  className="bg-[#124F32] hover:bg-[#124F32]"
+                >
                   Registrar
                 </Button>
               </div>
