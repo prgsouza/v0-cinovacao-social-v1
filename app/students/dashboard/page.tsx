@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, ChangeEvent } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -26,8 +26,9 @@ import { getWeeklyAttendanceSummary } from '@/lib/graph/graph.service'
 import { createReminder, getReminders } from '@/lib/reminder/reminder.service'
 import { getActivities, createActivity, updateActivity } from '@/lib/activity/activity.service'
 import { Separator } from "@/components/ui/separator"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { getCarouselImages, setCarouselImages, uploadCarouselImage, type CarouselImage } from "@/lib/carousel"
 
-// Componente para o Tooltip customizado do gráfico
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -56,7 +57,6 @@ export default function DashboardPage() {
   const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false)
   const [isEditingActivity, setIsEditingActivity] = useState(false)
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null)
-  const [isDeleteActivityConfirmOpen, setIsDeleteActivityConfirmOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [dateRange, setDateRange] = useState({ start: "", end: "" })
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
@@ -66,7 +66,11 @@ export default function DashboardPage() {
   const [isEditingReminder, setIsEditingReminder] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
   const [reminderToDelete, setReminderToDelete] = useState<Reminder | null>(null);
-  const [isActivityDialogOpen, setIsActivityDialogOpen] = useState(false);
+  
+  const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedDateString = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
 
@@ -81,16 +85,18 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [activitiesData, attendanceData, remindersData, summaryData] = await Promise.all([
+        const [activitiesData, attendanceData, remindersData, summaryData, carouselData] = await Promise.all([
           getActivities(),
           getAttendance(),
           getReminders(),
-          getWeeklyAttendanceSummary()
+          getWeeklyAttendanceSummary(),
+          getCarouselImages()
         ]);
         
         setActivities(activitiesData);
         setReminders(remindersData);
         setChartData(summaryData);
+        setCarouselImages(carouselData);
 
         const uniqueDates = [...new Set(attendanceData.map(a => a.date))];
         const recentDates = uniqueDates
@@ -150,20 +156,16 @@ export default function DashboardPage() {
         showError("Nenhuma atividade selecionada para edição")
         return
       }
-
       const updates = {
         title: formData.get("activity-title") as string,
         responsible: formData.get("responsible") as string,
         spots: Number.parseInt(formData.get("spots") as string),
         description: formData.get("activity-description") as string,
       }
-
       const updatedActivity = await updateActivity(selectedActivity.id, updates)
-
       setActivities(activities.map((a) =>
         a.id === selectedActivity.id ? updatedActivity : a
       ))
-
       setIsEditingActivity(false)
       setIsActivityDetailOpen(false)
       showSuccess("Atividade atualizada com sucesso!")
@@ -203,7 +205,7 @@ export default function DashboardPage() {
         description: formData.get("reminder-description") as string,
         date: formData.get("reminder-date") as string,
       };
-      const { updateReminder } = await import("@/lib/database"); // garante que usa a função correta
+      const { updateReminder } = await import("@/lib/database");
       const updated = await updateReminder(selectedReminder.id, updates);
       setReminders(reminders.map((r) => (r.id === selectedReminder.id ? updated : r)));
       showSuccess("Lembrete atualizado!");
@@ -225,7 +227,61 @@ export default function DashboardPage() {
       showError("Erro ao excluir lembrete");
     }
   };
+  
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
+    if (files.length > 5) {
+      showError("Você pode selecionar no máximo 5 imagens.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setIsUploading(true);
+    setIsUploadModalOpen(false);
+    showSuccess("Enviando imagens... Isso pode levar um momento.");
+
+    try {
+      const uploadPromises = Array.from(files).map(file => {
+        const filePath = `public/${Date.now()}-${file.name}`;
+        return uploadCarouselImage(file, filePath);
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      const newImageList = uploadedUrls.map((url, index) => ({
+        image_url: url,
+        order: index,
+      }));
+
+      await setCarouselImages(newImageList);
+      
+      const updatedImages = await getCarouselImages();
+      setCarouselImages(updatedImages);
+
+      showSuccess("Galeria atualizada com sucesso!");
+
+    } catch (error) {
+      console.error("Erro no upload:", error);
+      showError("Ocorreu um erro ao enviar as imagens.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+  
   return (
     <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
       <div className="flex items-center justify-between">
@@ -247,40 +303,87 @@ export default function DashboardPage() {
             </PopoverContent>
           </Popover>
           <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#88957d] hover:bg-[#7f6e62]">
-                <Plus className="w-4 h-4 mr-2" />Atividade
-              </Button>
-            </DialogTrigger>
+            <DialogTrigger asChild><Button className="bg-[#88957d] hover:bg-[#7f6e62]"><Plus className="w-4 h-4 mr-2" />Atividade</Button></DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader><DialogTitle>Criar Evento/Atividade</DialogTitle></DialogHeader>
-              <form onSubmit={(e) => { 
-                e.preventDefault(); 
-                const formData = new FormData(e.currentTarget); 
-                handleAddActivity(formData); 
-              }}>
+              <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleAddActivity(formData); }}>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2"><Label htmlFor="activity-title">Título da Atividade</Label><Input id="activity-title" name="activity-title" placeholder="Título da atividade" required /></div>
                   <div className="grid gap-2"><Label htmlFor="responsible">Responsável</Label><Input id="responsible" name="responsible" placeholder="Nome do responsável" required /></div>
                   <div className="grid gap-2"><Label htmlFor="spots">Vagas</Label><Input id="spots" name="spots" type="number" placeholder="Número de vagas" required /></div>
-                  <div className="grid gap-2"><Label htmlFor="activity-description">Descrição</Label><Textarea id="activity-description" name="activity-description" placeholder="Detalhes sobre a atividade" required /></div>
+                  <div className="grid gap-2"><Label htmlFor="activity-description">Descrição</Label><Textarea id="activity-description" name="activity-description" placeholder="Detalhes" required /></div>
                   <div className="grid gap-2"><Label htmlFor="activity-photo">Foto</Label><Input id="activity-photo" name="activity-photo" type="file" accept="image/*" /></div>
                 </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button>
-                  <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar Atividade</Button>
-                </div>
+                <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar</Button></div>
               </form>
             </DialogContent>
           </Dialog>
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-[#88957d] text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-medium">Frequência</h3><Edit className="w-5 h-5" /></div>
-            <div className="space-y-2"><div className="text-center"><span className="text-4xl font-bold">24</span><p className="text-sm opacity-90">presenças</p></div><div className="text-center"><span className="text-4xl font-bold text-[#d09c91]">5</span><p className="text-sm opacity-90">faltas</p></div></div>
-            <p className="text-sm opacity-90 mt-4 text-center">Mais alunos que semana passada</p>
+        <Card className="bg-white/90 backdrop-blur-sm relative group">
+          <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-[#7f6e62]">Galeria</CardTitle>
+              <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="w-8 h-8">
+                    <Edit className="w-4 h-4 text-gray-500" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Selecione até 5 novas imagens. As imagens antigas serão substituídas.
+                    </p>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      ref={fileInputRef}
+                      disabled={isUploading}
+                    />
+                    {isUploading && <p className="text-sm text-blue-600 mt-2">Enviando...</p>}
+                  </div>
+                </DialogContent>
+              </Dialog>
+          </CardHeader>
+          <CardContent className="p-0 pb-4">
+            {carouselImages.length > 0 ? (
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {carouselImages.map((img, index) => (
+                      <CarouselItem key={img.image_url}>
+                        <div className="p-1">
+                          <Card>
+                            <CardContent className="flex aspect-video items-center justify-center p-0 overflow-hidden rounded-lg">
+                              <Image 
+                                src={img.image_url} 
+                                alt={`Imagem da galeria ${index + 1}`} 
+                                width={400} 
+                                height={225} 
+                                className="object-cover w-full h-full"
+                                priority={index === 0}
+                              />
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="absolute left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CarouselNext className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Carousel>
+              ) : (
+                <div className="aspect-video flex items-center justify-center text-gray-500 p-4 text-center">
+                  <p>Nenhuma imagem na galeria. Clique no ícone de editar para adicionar.</p>
+                </div>
+              )
+            }
           </CardContent>
         </Card>
         <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
@@ -349,7 +452,6 @@ export default function DashboardPage() {
         <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-[#7f6e62]">Atividades</CardTitle>
-
             <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-[#88957d] hover:bg-[#7f6e62]">
@@ -360,82 +462,38 @@ export default function DashboardPage() {
                 <DialogHeader>
                   <DialogTitle>Criar Atividade</DialogTitle>
                 </DialogHeader>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    handleAddActivity(formData);
-                  }}
-                >
+                <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleAddActivity(formData); }}>
                   <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="activity-title">Título da Atividade</Label>
-                      <Input id="activity-title" name="activity-title" placeholder="Título" required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="responsible">Responsável</Label>
-                      <Input id="responsible" name="responsible" placeholder="Nome do responsável" required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="spots">Vagas</Label>
-                      <Input id="spots" name="spots" type="number" placeholder="Número de vagas" required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="activity-description">Descrição</Label>
-                      <Textarea id="activity-description" name="activity-description" placeholder="Detalhes" required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="activity-photo">Foto</Label>
-                      <Input id="activity-photo" name="activity-photo" type="file" accept="image/*" />
-                    </div>
+                    <div className="grid gap-2"><Label htmlFor="activity-title">Título da Atividade</Label><Input id="activity-title" name="activity-title" placeholder="Título" required /></div>
+                    <div className="grid gap-2"><Label htmlFor="responsible">Responsável</Label><Input id="responsible" name="responsible" placeholder="Nome do responsável" required /></div>
+                    <div className="grid gap-2"><Label htmlFor="spots">Vagas</Label><Input id="spots" name="spots" type="number" placeholder="Número de vagas" required /></div>
+                    <div className="grid gap-2"><Label htmlFor="activity-description">Descrição</Label><Textarea id="activity-description" name="activity-description" placeholder="Detalhes" required /></div>
+                    <div className="grid gap-2"><Label htmlFor="activity-photo">Foto</Label><Input id="activity-photo" name="activity-photo" type="file" accept="image/*" /></div>
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button>
-                    <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar</Button>
-                  </div>
+                  <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsAddActivityOpen(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Criar</Button></div>
                 </form>
               </DialogContent>
             </Dialog>
           </CardHeader>
-
           <CardContent>
             {activities.length === 0 ? (
               <p className="text-sm text-gray-600">Nenhuma atividade criada ainda.</p>
             ) : (
               <div className="space-y-3">
                 {activities.map((a) => (
-                  <div key={a.id} className="p-4 rounded-md border border-gray-200 flex justify-between items-start min-[6rem]">
-                    {/* Clique abre detalhes */}
-                    <div
-                      onClick={() => { setSelectedActivity(a); setIsActivityDetailOpen(true); setIsEditingActivity(false); }}
-                      className="cursor-pointer flex-1 flex gap-3"
-                    >
-                      <div className="w-28 h-20 bg-gray-200 rounded-lg overflow-hidden">
-                        <Image src={a.photo_url || "/computer-classroom.png"} alt="Atividade" width={96} height={64} className="w-full h-full object-cover"/>
+                  <div key={a.id} className="p-4 rounded-md border border-gray-200 flex justify-between items-start min-h-[6rem]">
+                    <div onClick={() => { setSelectedActivity(a); setIsActivityDetailOpen(true); setIsEditingActivity(false); }} className="cursor-pointer flex-1 flex gap-3">
+                      <div className="w-28 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                        <Image src={a.photo_url || "/computer-classroom.png"} alt="Atividade" width={112} height={80} className="w-full h-full object-cover"/>
                       </div>
                       <div className="flex-1">
                         <h4 className="line-clamp-2 lg:line-clamp-3 font-medium text-[#7f6e62]">{a.title}</h4>
                         {a.date && <p className="text-xs text-gray-500">{format(new Date(a.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</p>}
-                        {a.description && <p className="line-clamp-3 lg:line-clamp-4 text-sm text-gray-600 mt-1">{a.description}</p>}
-                        {a.responsible && <p className="text-sm font-medium text-[#7f6e62] mt-1">{a.responsible}</p>}
                       </div>
                     </div>
-                    {/* Botões de ação */}
-                    <div className="flex gap-2 ml-2 mt-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => { setSelectedActivity(a); setIsEditingActivity(true); setIsActivityDetailOpen(true); }}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => setActivityToDelete(a)}
-                      >
-                        Excluir
-                      </Button>
+                    <div className="flex flex-col gap-2 ml-2">
+                      <Button size="sm" variant="outline" onClick={() => { setSelectedActivity(a); setIsEditingActivity(true); setIsActivityDetailOpen(true); }}>Editar</Button>
+                      <Button size="sm" variant="destructive" onClick={() => setActivityToDelete(a)}>Excluir</Button>
                     </div>
                   </div>
                 ))}
@@ -461,15 +519,11 @@ export default function DashboardPage() {
                     <div className="grid gap-2"><Label htmlFor="reminder-description">Descrição</Label><Textarea id="reminder-description" name="reminder-description" /></div>
                     <div className="grid gap-2"><Label htmlFor="reminder-date">Data</Label><Input id="reminder-date" name="reminder-date" type="date" required /></div>
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" type="button" onClick={() => setIsAddReminderOpen(false)}>Cancelar</Button>
-                    <Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar</Button>
-                  </div>
+                  <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsAddReminderOpen(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar</Button></div>
                 </form>
               </DialogContent>
             </Dialog>
           </CardHeader>
-
           <CardContent>
             {reminders.length === 0 ? (
               <p className="text-sm text-gray-600">Nenhum lembrete criado ainda.</p>
@@ -477,10 +531,7 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {reminders.map((r) => (
                   <div key={r.id} className="p-3 rounded-md border border-gray-200 flex flex-col gap-2">
-                    <div
-                      onClick={() => { setSelectedReminder(r); setIsReminderDetailOpen(true); }}
-                      className="cursor-pointer"
-                    >
+                    <div onClick={() => { setSelectedReminder(r); setIsReminderDetailOpen(true); setIsEditingReminder(false); }} className="cursor-pointer">
                       <h4 className="font-medium text-[#7f6e62] line-clamp-5 mt-1 mb-2">{r.title}</h4>
                       {r.date && (
                         <p className="text-xs text-gray-500">{format(new Date(r.date + "T12:00:00Z"), "dd 'de' MMMM", { locale: ptBR })}</p>
@@ -491,13 +542,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex gap-2 justify-end">
                       <Button size="sm" variant="outline" onClick={() => { setSelectedReminder(r); setIsEditingReminder(true); setIsReminderDetailOpen(true); }}>Editar</Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => setReminderToDelete(r)}
-                      >
-                        Excluir
-                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => setReminderToDelete(r)}>Excluir</Button>
                     </div>
                   </div>
                 ))}
@@ -505,64 +550,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Dialog open={!!reminderToDelete} onOpenChange={(open) => { if (!open) setReminderToDelete(null); }}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle>Confirmar Exclusão</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <p>Deseja realmente excluir o lembrete <strong>{reminderToDelete?.title}</strong>?</p>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setReminderToDelete(null)}>Cancelar</Button>
-              <Button
-                className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={async () => {
-                  if (!reminderToDelete) return;
-                  try {
-                    const { deleteReminder } = await import("@/lib/database");
-                    await deleteReminder(reminderToDelete.id);
-                    setReminders(reminders.filter(r => r.id !== reminderToDelete.id));
-                    showSuccess("Lembrete excluído!");
-                    setReminderToDelete(null);
-                  } catch {
-                    showError("Erro ao excluir lembrete");
-                  }
-                }}
-              >
-                Excluir
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
-
-      <Dialog open={isActivityDetailOpen} onOpenChange={setIsActivityDetailOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{isEditingActivity ? "Editar Atividade" : "Detalhes da Atividade"}</DialogTitle></DialogHeader>
-          {todayActivity && (isEditingActivity ? (
-            <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleEditActivity(formData); }}>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2"><Label htmlFor="edit-activity-title">Título da Atividade</Label><Input id="edit-activity-title" name="activity-title" defaultValue={todayActivity.title} required /></div>
-                <div className="grid gap-2"><Label htmlFor="edit-responsible">Responsável</Label><Input id="edit-responsible" name="responsible" defaultValue={todayActivity.responsible} required /></div>
-                <div className="grid gap-2"><Label htmlFor="edit-spots">Vagas</Label><Input id="edit-spots" name="spots" type="number" defaultValue={todayActivity.spots} required /></div>
-                <div className="grid gap-2"><Label htmlFor="edit-activity-description">Descrição</Label><Textarea id="edit-activity-description" name="activity-description" defaultValue={todayActivity.description} required /></div>
-              </div>
-              <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsEditingActivity(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar Alterações</Button></div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden"><Image src="/computer-classroom.png" alt="Atividade" width={400} height={192} className="w-full h-full object-cover" /></div>
-              <div className="space-y-3">
-                <div><Label className="font-medium">Responsável</Label><p className="text-sm text-gray-600">{todayActivity.responsible}</p></div>
-                <div><Label className="font-medium">Vagas</Label><p className="text-sm text-gray-600">{todayActivity.spots} vagas disponíveis</p></div>
-                <div><Label className="font-medium">Descrição</Label><p className="text-sm text-gray-600">{todayActivity.description}</p></div>
-              </div>
-              <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setIsActivityDetailOpen(false)}>Fechar</Button><Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingActivity(true)}><Edit className="w-4 h-4 mr-2" />Editar</Button></div>
-            </div>
-          ))}
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={!!activityToDelete} onOpenChange={(open) => { if (!open) setActivityToDelete(null); }}>
         <DialogContent className="sm:max-w-[400px]">
@@ -594,12 +582,69 @@ export default function DashboardPage() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={isActivityDetailOpen} onOpenChange={setIsActivityDetailOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader><DialogTitle>{isEditingActivity ? "Editar Atividade" : "Detalhes da Atividade"}</DialogTitle></DialogHeader>
+          {selectedActivity && (isEditingActivity ? (
+            <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleEditActivity(formData); }}>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2"><Label htmlFor="edit-activity-title">Título da Atividade</Label><Input id="edit-activity-title" name="activity-title" defaultValue={selectedActivity.title} required /></div>
+                <div className="grid gap-2"><Label htmlFor="edit-responsible">Responsável</Label><Input id="edit-responsible" name="responsible" defaultValue={selectedActivity.responsible} required /></div>
+                <div className="grid gap-2"><Label htmlFor="edit-spots">Vagas</Label><Input id="edit-spots" name="spots" type="number" defaultValue={selectedActivity.spots} required /></div>
+                <div className="grid gap-2"><Label htmlFor="edit-activity-description">Descrição</Label><Textarea id="edit-activity-description" name="activity-description" defaultValue={selectedActivity.description} required /></div>
+              </div>
+              <div className="flex justify-end gap-2"><Button variant="outline" type="button" onClick={() => setIsEditingActivity(false)}>Cancelar</Button><Button type="submit" className="bg-[#88957d] hover:bg-[#7f6e62]">Salvar Alterações</Button></div>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden"><Image src={selectedActivity.photo_url || "/computer-classroom.png"} alt="Atividade" width={400} height={192} className="w-full h-full object-cover" /></div>
+              <div className="space-y-3">
+                <div><Label className="font-medium">Responsável</Label><p className="text-sm text-gray-600">{selectedActivity.responsible}</p></div>
+                <div><Label className="font-medium">Vagas</Label><p className="text-sm text-gray-600">{selectedActivity.spots} vagas disponíveis</p></div>
+                <div><Label className="font-medium">Descrição</Label><p className="text-sm text-gray-600">{selectedActivity.description}</p></div>
+              </div>
+              <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setIsActivityDetailOpen(false)}>Fechar</Button><Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingActivity(true)}><Edit className="w-4 h-4 mr-2" />Editar</Button></div>
+            </div>
+          ))}
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={!!reminderToDelete} onOpenChange={(open) => { if (!open) setReminderToDelete(null); }}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Deseja realmente excluir o lembrete <strong>{reminderToDelete?.title}</strong>?</p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setReminderToDelete(null)}>Cancelar</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={async () => {
+                if (!reminderToDelete) return;
+                try {
+                  const { deleteReminder } = await import("@/lib/database");
+                  await deleteReminder(reminderToDelete.id);
+                  setReminders(reminders.filter(r => r.id !== reminderToDelete.id));
+                  showSuccess("Lembrete excluído!");
+                  setReminderToDelete(null);
+                } catch {
+                  showError("Erro ao excluir lembrete");
+                }
+              }}
+            >
+              Excluir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       <Dialog open={isReminderDetailOpen} onOpenChange={setIsReminderDetailOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>{isEditingReminder ? "Editar Lembrete" : "Detalhes do Lembrete"}</DialogTitle>
           </DialogHeader>
-
           {selectedReminder && (isEditingReminder ? (
             <form onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); handleEditReminder(formData); }}>
               <div className="grid gap-4 py-4">
