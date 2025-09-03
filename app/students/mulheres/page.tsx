@@ -357,12 +357,12 @@ export default function MulheresPage() {
       {/* Grid ajustado: Chamada maior (2 colunas) e Ranking menor (1 coluna) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chamada - Agora ocupa 2 colunas (maior) com overflow limitado a 4 pessoas */}
-        <Card className="lg:col-span-2 bg-[#FFD700] backdrop-blur-sm relative">
+        <Card className="lg:col-span-2 bg-[#F4A460] backdrop-blur-sm relative">
           <CardHeader className="pb-3">
-            <CardTitle className="text-black font-bold">Chamada</CardTitle>
+            <CardTitle className="text-white font-bold">Chamada</CardTitle>
             {!canSaveAttendance() && (
               <div className="text-center pt-2">
-                <p className="text-black/70 text-sm">
+                <p className="text-white/70 text-sm">
                   Marque a presença de todas as mulheres para confirmar a chamada
                 </p>
               </div>
@@ -376,7 +376,7 @@ export default function MulheresPage() {
                   className={`rounded-lg p-3 flex items-center justify-between min-h-[60px] transition-all ${
                     attendanceData[woman.id] 
                       ? "bg-[#FF6B35]" 
-                      : "bg-[#FF6B35]/60 border-2 border-dashed border-[#FF6B35]"
+                      : "bg-[#217E53] border-2 border-dashed border-[#FFFF]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -489,7 +489,7 @@ export default function MulheresPage() {
           </div>
           <Dialog open={isAddWomanOpen} onOpenChange={setIsAddWomanOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#88957d] hover:bg-[#7f6e62] flex-shrink-0">
+              <Button className="bg-[#217E53] hover:bg-[#7f6e62] flex-shrink-0">
                 <Plus className="w-4 h-4 mr-2" />
                 Cadastrar Nova Mulher
               </Button>

@@ -106,7 +106,7 @@ export default async function HomePage() {
               <Link href="/materials" className="group">
                 <Card className="h-full bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
                   <CardContent className="p-8 text-center">
-                    <div className="w-20 h-20 bg-[#FBB600] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-[#7f6e62] transition-colors">
+                    <div className="w-20 h-20 bg-[#E6742D] rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-[#7f6e62] transition-colors">
                       <Package className="w-10 h-10 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold text-[#7f6e62] mb-4">
