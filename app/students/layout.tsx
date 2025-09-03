@@ -39,6 +39,7 @@ const sidebarItems = [
       },
       { title: "Alunos", icon: Users, href: "/students/alunos" },
       { title: "Chamadas", icon: UserCheck, href: "/students/chamadas" },
+      { title: "Mulheres", icon: UserCheck, href: "/students/mulheres" },
     ],
   },
   {

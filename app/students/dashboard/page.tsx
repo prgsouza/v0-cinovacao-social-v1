@@ -73,6 +73,8 @@ import {
   type CarouselImage,
 } from "@/lib/carousel";
 
+
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -512,118 +514,133 @@ export default function DashboardPage() {
           </Dialog>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-white/90 backdrop-blur-sm relative group">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-[#7f6e62]">Galeria</CardTitle>
-            <Dialog
-              open={isUploadModalOpen}
-              onOpenChange={setIsUploadModalOpen}
-            >
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-8 h-8">
-                  <Edit className="w-4 h-4 text-gray-500" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
-                </DialogHeader>
-                <div className="py-4">
-                  <p className="text-sm text-gray-600 mb-4">
-                    Selecione até 5 novas imagens. As imagens antigas serão
-                    substituídas.
-                  </p>
-                  <Input
-                    id="image-upload"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    ref={fileInputRef}
-                    disabled={isUploading}
-                  />
-                  {isUploading && (
-                    <p className="text-sm text-blue-600 mt-2">Enviando...</p>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-          </CardHeader>
-          <CardContent className="p-0 pb-4">
-            {carouselImages.length > 0 ? (
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {carouselImages.map((img, index) => (
-                    <CarouselItem key={img.image_url}>
-                      <div className="p-1">
-                        <Card>
-                          <CardContent className="flex aspect-video items-center justify-center p-0 overflow-hidden rounded-lg">
-                            <Image
-                              src={img.image_url}
-                              alt={`Imagem da galeria ${index + 1}`}
-                              width={400}
-                              height={225}
-                              className="object-cover w-full h-full"
-                              priority={index === 0}
-                            />
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <CarouselNext className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Carousel>
-            ) : (
-              <div className="aspect-video flex items-center justify-center text-gray-500 p-4 text-center">
-                <p>
-                  Nenhuma imagem na galeria. Clique no ícone de editar para
-                  adicionar.
-                </p>
-              </div>
+
+
+
+
+
+
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <Card className="bg-[#175D3C] backdrop-blur-sm relative group text-white">
+    <CardHeader className="absolute top-2 right-2 z-10 flex flex-row items-center justify-end p-0">
+      <Dialog
+        open={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+      >
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon" className="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm">
+            <Edit className="w-4 h-4 text-white hover:text-gray-300" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-600 mb-4">
+              Selecione até 5 novas imagens. As imagens antigas serão
+              substituídas.
+            </p>
+            <Input
+              id="image-upload"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              ref={fileInputRef}
+              disabled={isUploading}
+            />
+            {isUploading && (
+              <p className="text-sm text-blue-600 mt-2">Enviando...</p>
             )}
-          </CardContent>
-        </Card>
-        <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-[#7f6e62]">Análise da Semana</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis hide />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ fill: "rgba(213, 196, 170, 0.3)" }}
-                />
-                <Legend verticalAlign="top" height={36} iconSize={10} />
-                <Bar
-                  dataKey="presences"
-                  name="Presenças"
-                  fill="#88957d"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="absences"
-                  name="Faltas"
-                  fill="#d09c91"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="justified"
-                  name="Justificadas"
-                  fill="#d5c4aa"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </CardHeader>
+    <CardContent className="p-0">
+      {carouselImages.length > 0 ? (
+        <Carousel className="w-full h-full">
+          <CarouselContent className="-ml-1">
+            {carouselImages.map((img, index) => (
+              <CarouselItem key={img.image_url} className="p-0 pl-1"> 
+                <div className="p-0 ">
+                  <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border-2 border-[#175D3C]">
+                      <Image
+                        src={img.image_url}
+                        alt={`Imagem da galeria ${index + 1}`}
+                        width={400}
+                        height={200}
+                        className="object-contain w-full h-full"
+                        priority={index === 0}
+                      />
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
+          <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
+        </Carousel>
+      ) : (
+        <div className="h-[280px] flex items-center justify-center text-white/70 p-4 text-center border-2 border-dashed border-white/30 rounded-lg m-4">
+          <p>
+            Nenhuma imagem na galeria. Clique no ícone de editar para
+            adicionar.
+          </p>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+  <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
+    <CardHeader>
+      <CardTitle className="text-[#7f6e62] text-lg">Análise da Semana</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={chartData} barCategoryGap="20%">
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
+          <XAxis dataKey="day" axisLine={false} tickLine={false} />
+          <YAxis hide />
+          <YAxis hide />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ fill: "rgba(213, 196, 170, 0.3)" }}
+          />
+          <Legend
+            verticalAlign="bottom"
+            align="right"
+            height={36}
+            iconSize={8}
+            iconType="circle"
+          />
+          <Bar
+            dataKey="presences"
+            name="Presenças"
+            fill="#16a34a"
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar
+            dataKey="absences"
+            name="Faltas"
+            fill="#dc2626"
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar
+            dataKey="justified"
+            name="Justificadas"
+            fill="#f97316"
+            radius={[4, 4, 0, 0]}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </CardContent>
+  </Card>
+</div>
+
+
+
+
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
