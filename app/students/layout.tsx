@@ -40,17 +40,6 @@ const sidebarItems = [
       { title: "Alunos", icon: Users, href: "/students/alunos" },
       { title: "Chamadas", icon: UserCheck, href: "/students/chamadas" },
       { title: "Mulheres", icon: UserCheck, href: "/students/mulheres" },
-    ],
-  },
-  {
-    title: "GERAL",
-    items: [
-      {
-        title: "Configurações",
-        icon: Settings,
-        href: "/students/configuracoes",
-      },
-      { title: "Ajuda", icon: HelpCircle, href: "/students/ajuda" },
       { title: "Voltar ao Hub", icon: Home, href: "/" },
     ],
   },
