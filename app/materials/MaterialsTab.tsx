@@ -82,6 +82,7 @@ export default function MaterialsTab({
         name: formData.get("item-name") as string,
         quantity: Number.parseInt(formData.get("quantity") as string),
         category: formData.get("category") as string,
+        necessary: Number.parseInt(formData.get("necessary") as string) || 1,
         description: formData.get("description") as string,
       };
       const created = await createMaterial(newMaterial);
@@ -146,30 +147,44 @@ export default function MaterialsTab({
           Materiais que estão em falta
         </h2>
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {materials
-            .filter((material) => material.quantity < 10)
-            .map((item) => (
-              <Card
-                key={item.id}
-                className="min-w-[280px] bg-red-50 border-red-200"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                    <Badge variant="destructive">Falta</Badge>
-                  </div>
-                  <h3 className="font-semibold text-[#7f6e62] mb-1">
-                    {item.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Atual: {item.quantity} | Necessário: 10
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Categoria: {item.category}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          {materials.filter(
+            (material) => material.quantity < material.necessary
+          ).length > 0 ? (
+            materials
+              .filter((material) => material.quantity < material.necessary)
+              .map((item) => (
+                <Card
+                  key={item.id}
+                  className="min-w-[280px] bg-red-50 border-red-200"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                      <Badge variant="destructive">Falta</Badge>
+                    </div>
+                    <h3 className="font-semibold text-[#7f6e62] mb-1">
+                      {item.name}
+                    </h3>
+                    {item.quantity === 0 ? (
+                      <p className="text-sm text-red-600 font-semibold">
+                        0 em estoque
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-600">
+                        Atual: {item.quantity} | Necessário: {item.necessary}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Categoria: {item.category}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
+          ) : (
+            <p className="justify-center text-gray-500 m-auto py-20">
+              Nenhum material em falta no momento.
+            </p>
+          )}
         </div>
       </div>
 
@@ -251,6 +266,14 @@ export default function MaterialsTab({
                     type="number"
                     placeholder="Quantidade inicial"
                     required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="quantity">Mínimo Necessário</Label>
+                  <Input
+                    name="necessary"
+                    type="number"
+                    placeholder="1 por padrão"
                   />
                 </div>
                 <div className="grid gap-2">
