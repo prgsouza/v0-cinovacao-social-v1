@@ -28,12 +28,14 @@ import {
   Minus,
   AlertTriangle,
   ChevronDown,
+  Trash,
 } from "lucide-react";
 import { useNotification } from "@/hooks/use-notification";
 import { Material } from "@/lib/material/material.dto";
 import {
   createMaterial,
   updateMaterial,
+  deleteMaterial,
 } from "@/lib/material/material.service";
 
 const materialCategories = [
@@ -135,6 +137,18 @@ export default function MaterialsTab({
     } catch (error) {
       console.error(error);
       showError("Erro ao editar quantidade");
+    }
+  };
+
+  // Função para excluir material
+  const handleDeleteMaterial = async (materialId: string) => {
+    try {
+      await deleteMaterial(materialId);
+      setMaterials(materials.filter((m) => m.id !== materialId));
+      showSuccess("Material excluído com sucesso!");
+    } catch (error) {
+      console.error(error);
+      showError("Erro ao excluir material");
     }
   };
 
@@ -303,45 +317,67 @@ export default function MaterialsTab({
         <h3 className="text-xl font-semibold text-[#7f6e62] mb-4">
           Materiais Gerais
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
           {filteredMaterials.map((material) => (
             <Card
               key={material.id}
-              className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer"
+              className="group relative bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer w-full max-w-sm h-full mx-auto"
               onClick={() => setSelectedMaterial(material)}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-[#7f6e62]">
-                    {material.name}
-                  </h4>
-                  <Badge variant="secondary">{material.category}</Badge>
+              <CardContent className="p-4 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-[#7f6e62]">
+                      {material.name}
+                    </h4>
+                    <span className="relative inline-block w-20 h-8 align-middle">
+                      {/* Categoria visível normalmente */}
+                      <Badge
+                        variant="secondary"
+                        className="transition-opacity duration-200 group-hover:opacity-0 w-20 h-8 flex items-center justify-center absolute inset-0"
+                      >
+                        {material.category}
+                      </Badge>
+                      {/* Lixeira minimalista aparece só no hover */}
+                      <span
+                        className="absolute inset-0 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        style={{ left: "50%", transform: "translateX(-50%)" }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleDeleteMaterial(material.id);
+                        }}
+                        title="Excluir material"
+                      >
+                        <Trash className="w-6 h-6 text-red-500 drop-shadow" />
+                      </span>
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Quantidade: {material.quantity}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Quantidade: {material.quantity}
-                </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-auto">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 bg-transparent"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStockAdjustment(material.id, "add");
-                    }}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 bg-transparent"
+                    className="flex-1 bg-red-100 text-red-700 border-red-300 hover:bg-red-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleStockAdjustment(material.id, "remove");
                     }}
                   >
                     <Minus className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStockAdjustment(material.id, "add");
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </div>
               </CardContent>
