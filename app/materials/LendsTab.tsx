@@ -93,7 +93,7 @@ export default function LendsTab({
       <div className="flex justify-end">
         <Dialog open={isAddLendOpen} onOpenChange={setIsAddLendOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#124F32] hover:bg-[#124F32] flex items-center gap-2">
+            <Button className="bg-[#237C52] hover:bg-[#237C52] flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Registrar Empréstimo
             </Button>
@@ -238,7 +238,7 @@ export default function LendsTab({
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#124F32] hover:bg-[#124F32]"
+                  className="bg-[#237C52] hover:bg-[#237C52]"
                 >
                   Registrar
                 </Button>

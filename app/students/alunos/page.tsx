@@ -110,7 +110,7 @@ export default function AlunosPage() {
         <h1 className="text-3xl font-bold text-[#7f6e62]">Alunos</h1>
         <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#88957d] hover:bg-[#7f6e62]">
+            <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
               <Plus className="w-4 h-4 mr-2" />
               Cadastrar Novo Aluno
             </Button>
@@ -217,7 +217,7 @@ export default function AlunosPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#88957d] hover:bg-[#7f6e62]"
+                  className="bg-[#237C52] hover:bg-[#7f6e62]"
                 >
                   Cadastrar Aluno
                 </Button>
@@ -398,7 +398,7 @@ export default function AlunosPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                   >
                     Salvar Alterações
                   </Button>
@@ -468,7 +468,7 @@ export default function AlunosPage() {
                     Fechar
                   </Button>
                   <Button
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                     onClick={() => setIsEditingStudent(true)}
                   >
                     <Edit className="w-4 h-4 mr-2" />

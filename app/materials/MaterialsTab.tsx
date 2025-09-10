@@ -221,7 +221,7 @@ export default function MaterialsTab({
                     }}
                     className={`w-full text-left px-3 py-2 hover:bg-gray-100 ${
                       selectedMaterialCategory === category
-                        ? "bg-[#88957d] text-white"
+                        ? "bg-[#237C52] text-white"
                         : ""
                     }`}
                   >
@@ -234,7 +234,7 @@ export default function MaterialsTab({
         </div>
         <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#124F32] hover:bg-[#7f6e62]">
+            <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
               <Plus className="w-4 h-4 mr-2" />
               Cadastrar Material
             </Button>
@@ -311,7 +311,7 @@ export default function MaterialsTab({
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#124F32] hover:bg-[#7f6e62]"
+                  className="bg-[#237C52] hover:bg-[#7f6e62]"
                 >
                   Cadastrar
                 </Button>
