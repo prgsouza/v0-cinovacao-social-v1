@@ -29,9 +29,9 @@ export default function MaterialsLayout({ children, activeTab, setActiveTab }: M
     <PageContainer>
       <SidebarProvider>
         <div className="flex w-full min-h-screen bg-gray-50">
-          <Sidebar className="bg-[#E6742D] text-white border-r border-none">
-            <SidebarContent className="bg-[#E6742D] text-white">
-              <div className="p-4 border-b flex justify-center bg-[#E6742D]">
+          <Sidebar className="bg-[#E7732D] text-white border-r border-none">
+            <SidebarContent className="bg-[#E7732D] text-white">
+              <div className="p-4 border-b flex justify-center bg-[#E7732D]">
                 <Image
                   src="/images/gris-logo.png"
                   alt="GRIS Logo"
@@ -92,7 +92,7 @@ export default function MaterialsLayout({ children, activeTab, setActiveTab }: M
 
           <main className="flex-1 relative">
             <div className="absolute top-5 left-5 z-30">
-              <SidebarTrigger className="text-white bg-[#E6742D] hover:shadow-lg" />
+              <SidebarTrigger className="text-white bg-[#E7732D] hover:shadow-lg" />
             </div>
             <div className="p-6 pt-16 lg:pt-6">{children}</div>
           </main>

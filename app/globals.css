@@ -133,7 +133,25 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* background global com imagem e fallback de cor */
+  html, body {
+    height: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    /* fallback de cor caso a imagem não carregue */
+    background-color: var(--color-ngo-beige, #d5c4aa);
+
+    /* imagem de fundo (arquivo dentro de /public/images/) */
+    background-image: url("/images/plano-de-fundo.png");
+    background-size: cover;        /* cobre toda a área */
+    background-position: center;   /* centraliza */
+    background-repeat: no-repeat;
+    background-attachment: fixed;  /* opcional: deixa fixa enquanto rola a página */
+
+    /* mantém seu texto e variáveis */
+    color: var(--color-foreground);
   }
 }
+

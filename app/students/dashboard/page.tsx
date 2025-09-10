@@ -420,7 +420,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button
                     onClick={handleDateRangeFilter}
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                   >
                     Aplicar Filtro
                   </Button>
@@ -430,7 +430,7 @@ export default function DashboardPage() {
           </Popover>
           <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#88957d] hover:bg-[#7f6e62]">
+              <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
                 <Plus className="w-4 h-4 mr-2" />
                 Atividade
               </Button>
@@ -504,7 +504,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                   >
                     Criar
                   </Button>
@@ -721,7 +721,7 @@ export default function DashboardPage() {
               onOpenChange={setIsAddActivityOpen}
             >
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-[#88957d] hover:bg-[#7f6e62]">
+                <Button size="sm" className="bg-[#237C52] hover:bg-[#7f6e62]">
                   <Plus className="w-4 h-4 mr-2" />
                   Novo
                 </Button>
@@ -797,7 +797,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-[#88957d] hover:bg-[#7f6e62]"
+                      className="bg-[#237C52] hover:bg-[#7f6e62]"
                     >
                       Criar
                     </Button>
@@ -885,7 +885,7 @@ export default function DashboardPage() {
               onOpenChange={setIsAddReminderOpen}
             >
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-[#88957d] hover:bg-[#7f6e62]">
+                <Button size="sm" className="bg-[#237C52] hover:bg-[#7f6e62]">
                   <Plus className="w-4 h-4 mr-2" />
                   Novo
                 </Button>
@@ -937,7 +937,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-[#88957d] hover:bg-[#7f6e62]"
+                      className="bg-[#237C52] hover:bg-[#7f6e62]"
                     >
                       Salvar
                     </Button>
@@ -1126,7 +1126,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                   >
                     Salvar Alterações
                   </Button>
@@ -1173,7 +1173,7 @@ export default function DashboardPage() {
                     Fechar
                   </Button>
                   <Button
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                     onClick={() => setIsEditingActivity(true)}
                   >
                     <Edit className="w-4 h-4 mr-2" />
@@ -1286,7 +1286,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                   >
                     Salvar Alterações
                   </Button>
@@ -1328,7 +1328,7 @@ export default function DashboardPage() {
                     Fechar
                   </Button>
                   <Button
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                     onClick={() => setIsEditingReminder(true)}
                   >
                     Editar
