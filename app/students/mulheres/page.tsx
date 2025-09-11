@@ -164,34 +164,28 @@ export default function MulheresPage() {
   return (
     <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#7f6e62]">Mulheres</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Mulheres</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-
-
-
         {/* Card de Chamada */}
-        <Card className="lg:col-span-2 bg-[#F4A460] backdrop-blur-sm relative">
+        <Card className="lg:col-span-2 bg-[#E6742D] backdrop-blur-sm relative">
           <CardHeader className="pb-3">
             <CardTitle className="text-white font-bold">Chamada</CardTitle>
-            {!canSaveAttendance() && (
-              <div className="text-center pt-2"><p className="text-white/70 text-sm">Marque a presença de todas as mulheres para confirmar a chamada</p></div>
-            )}
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="overflow-y-auto max-h-[280px] space-y-2 pr-2">
               {women.map((woman) => (
-                <div key={woman.id} className={`rounded-lg p-3 flex items-center justify-between min-h-[60px] transition-all ${attendanceData[woman.id] ? "bg-[#FF6B35]" : "bg-[#217E53] border-2 border-dashed border-[#FFFF]"}`}>
+                <div key={woman.id} className={`rounded-lg p-3 flex items-center justify-between min-h-[60px] transition-all ${attendanceData[woman.id] ? "bg-[#217E53] border-2" : "bg-blue-900 border-2  border-[#FFFF]"}`}>
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12"><AvatarImage src={woman.photo_url || ''} /><AvatarFallback>{woman.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback></Avatar>
                     <span className="font-medium text-white">{woman.name}</span>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <Button size="sm" className={`text-xs px-2 py-1 ${attendanceData[woman.id] === "present" ? "bg-white text-green-600 hover:bg-gray-100" : "bg-white/80 text-black hover:bg-white"}`} onClick={() => handleAttendanceChange(woman.id, "present")}>
+                    <Button size="sm" className={`text-xs px-2 py-1 ${attendanceData[woman.id] === "present" ? "bg-green-600 text-black hover:bg-gray-100" : "bg-white/80 text-black hover:bg-green-600"}`} onClick={() => handleAttendanceChange(woman.id, "present")}>
                       <CheckCircle className="w-3 h-3 mr-1" /> Presente
                     </Button>
-                    <Button size="sm" className={`text-xs px-2 py-1 ${attendanceData[woman.id] === "absent" ? "bg-white text-red-600 hover:bg-gray-100" : "bg-white/80 text-black hover:bg-white"}`} onClick={() => handleAttendanceChange(woman.id, "absent")}>
+                    <Button size="sm" className={`text-xs px-2 py-1 ${attendanceData[woman.id] === "absent" ? "bg-red-600 text-black hover:bg-gray-100" : "bg-white/80 text-black hover:bg-red-600"}`} onClick={() => handleAttendanceChange(woman.id, "absent")}>
                       <X className="w-3 h-3 mr-1" /> Faltou
                     </Button>
                   </div>
@@ -199,25 +193,22 @@ export default function MulheresPage() {
               ))}
             </div>
           </CardContent>
-           <CardFooter className="flex items-center justify-between gap-2 pt-3 border-t border-black/20">
-              <Input type="date" value={attendanceDate} onChange={(e) => setAttendanceDate(e.target.value)} className="bg-white/90 text-black border-none text-sm w-auto" />
-              <Button onClick={handleSaveAttendance} disabled={!canSaveAttendance() || isSavingAttendance} className={`text-xs px-3 py-1 ${canSaveAttendance() ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-400 text-gray-600 cursor-not-allowed"}`}>
+           <CardFooter className="flex items-center justify-end gap-2 pt-3 border-t border-black/20">
+              <Button onClick={handleSaveAttendance} className={`text-sm px-3 py-1 ${canSaveAttendance() ? "bg-[#217E53] hover:bg-[#7f6e62] font-semibold text-white" : "bg-[#217E53] hover:bg-[#7f6e62] text-white"}`}>
                 {isSavingAttendance ? "Salvando..." : "Confirmar Chamada"}
               </Button>
             </CardFooter>
         </Card>
 
-
-
         {/* Card de Ranking */}
-        <Card className="bg-[#F4A460] backdrop-blur-sm text-white flex flex-col">
+        <Card className="bg-[#E6742D] backdrop-blur-sm text-white flex flex-col">
           <CardHeader><CardTitle className="text-white">Ranking de Participação</CardTitle></CardHeader>
-          <CardContent className="space-y-3 flex-grow">
-            <div className="overflow-y-auto max-h-[280px] space-y-3 pr-2">
+          <CardContent className="space-y-3 flex-grow pt-3">
+            <div className="overflow-y-auto max-h-[280px] space-y-3 pr-2 ">
               {[...women].sort((a, b) => b.presences - a.presences).map((woman) => (
-                  <div key={woman.id} className="flex items-center justify-between p-3 bg-white/20 rounded-lg min-h-[60px]">
+                  <div key={woman.id} className="flex items-center justify-between p-3 bg-white/20 rounded-lg min-h-[60px] ">
                     <div className="flex items-center gap-3">
-                      <Avatar><AvatarImage src={woman.photo_url || ''} /><AvatarFallback>{woman.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback></Avatar>
+                      <Avatar className="w-12 h-12"><AvatarImage src={woman.photo_url || ''} /><AvatarFallback>{woman.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback></Avatar>
                       <span className="font-medium text-sm">{woman.name}</span>
                     </div>
                     <span className="font-medium text-sm flex-shrink-0">{woman.presences} Presenças</span>
@@ -225,7 +216,7 @@ export default function MulheresPage() {
               ))}
             </div>
           </CardContent>
-          <CardFooter className="pt-4 mt-auto border-t border-white/20">
+          <CardFooter className="flex justify-end pt-4 mt-auto border-t border-white/20">
             <Dialog open={isResetRankingModalOpen} onOpenChange={setIsResetRankingModalOpen}>
               <DialogTrigger asChild><Button variant="destructive" className="w-lx bg-red-600 hover:bg-red-700" onClick={() => setIsResetRankingModalOpen(true)}>Zerar Ranking</Button></DialogTrigger>
               <DialogContent>
@@ -242,8 +233,6 @@ export default function MulheresPage() {
           </CardFooter>
         </Card>
       </div>
-
-
 
 
       {/* Lista e Cadastro */}
