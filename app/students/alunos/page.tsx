@@ -107,7 +107,7 @@ export default function AlunosPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#7f6e62]">Alunos</h1>
+        <h1 className="text-3xl font-bold text-[#ffffff]">Alunos</h1>
         <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#237C52] hover:bg-[#7f6e62]">

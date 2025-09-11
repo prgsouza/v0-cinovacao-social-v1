@@ -249,7 +249,7 @@ export default function LendsTab({
       </div>
 
       <div>
-        <h3 className="text-xl font-semibold text-[#7f6e62] mb-4">
+        <h3 className="text-xl font-semibold text-[#ffffff] mb-4">
           Empréstimos Registrados
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

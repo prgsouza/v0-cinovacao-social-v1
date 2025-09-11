@@ -154,17 +154,17 @@ export default function MulheresPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
-        <h1 className="text-3xl font-bold text-[#7f6e62]">Mulheres</h1>
+      <div className="space-y-6 bg-transparent p-4 rounded-xl">
+        <h1 className="text-3xl font-bold text-[#ffffff]">Mulheres</h1>
         <div className="text-center py-8"><p className="text-gray-600">Carregando dados do banco...</p></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
+    <div className="space-y-6 bg-transparent p-4 rounded-xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#7f6e62]">Mulheres</h1>
+        <h1 className="text-3xl font-bold text-[#ffffff]">Mulheres</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

@@ -95,8 +95,8 @@ function ChamadaContent() {
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#7f6e62]">Chamada do Dia</h1>
-          <div className="text-sm text-gray-600">{selectedDate?.toLocaleDateString("pt-BR")}</div>
+          <h1 className="text-3xl font-bold text-[#ffffff]">Chamada do Dia</h1>
+          <div className="text-sm text-white">{selectedDate?.toLocaleDateString("pt-BR")}</div>
         </div>
 
 
