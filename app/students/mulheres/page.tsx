@@ -252,11 +252,11 @@ export default function MulheresPage() {
   return (
     <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#7f6e62]">Mulheres</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Mulheres</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Card de Chamada */}
-        <Card className="lg:col-span-2 bg-[#F4A460] backdrop-blur-sm relative">
+        <Card className="lg:col-span-2 bg-[#E6742D] backdrop-blur-sm relative">
           <CardHeader className="pb-3">
             <CardTitle className="text-white font-bold">Chamada</CardTitle>
             {!canSaveAttendance() && (
@@ -421,7 +421,7 @@ export default function MulheresPage() {
           </CardFooter>
         </Card>
       </div>
-
+        
       {/* Lista e Cadastro */}
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-4">
