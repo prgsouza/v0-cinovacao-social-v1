@@ -56,6 +56,7 @@ import {
   getActivities,
   createActivity,
   updateActivity,
+  uploadActivityPhoto,
 } from "@/lib/activity/activity.service";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -72,8 +73,6 @@ import {
   testCarouselTableConnection,
   type CarouselImage,
 } from "@/lib/carousel";
-
-
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -126,6 +125,7 @@ export default function DashboardPage() {
   const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingActivityPhoto, setUploadingActivityPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedDateString = selectedDate
@@ -202,20 +202,52 @@ export default function DashboardPage() {
 
   const handleAddActivity = async (formData: FormData) => {
     try {
+      setUploadingActivityPhoto(true);
+
       const newActivity = {
         title: formData.get("activity-title") as string,
         responsible: formData.get("responsible") as string,
         spots: Number.parseInt(formData.get("spots") as string),
         description: formData.get("activity-description") as string,
         date: format(new Date(), "yyyy-MM-dd"),
-        photo_url: null,
+        photo_url: undefined,
       };
+
+      // Create the activity first to get an ID
       const created = await createActivity(newActivity);
-      setActivities([created, ...activities]);
-      showSuccess("Atividade criada com sucesso!");
+
+      // Handle photo upload if a file was selected
+      const photoFile = formData.get("activity-photo") as File;
+      if (photoFile && photoFile.size > 0) {
+        try {
+          const photoUrl = await uploadActivityPhoto(created.id, photoFile);
+          // Update the activity with the photo URL
+          const updatedActivity = await updateActivity(created.id, {
+            photo_url: photoUrl,
+          });
+          setActivities([updatedActivity, ...activities]);
+          showSuccess("Atividade criada com foto!");
+        } catch (photoError) {
+          console.error("Photo upload failed:", photoError);
+          // Still add the activity even if photo upload fails
+          setActivities([created, ...activities]);
+          const errorMessage =
+            photoError instanceof Error
+              ? photoError.message
+              : "Erro desconhecido no upload";
+          showSuccess("Atividade criada, mas houve erro no upload da foto.");
+        }
+      } else {
+        setActivities([created, ...activities]);
+        showSuccess("Atividade criada com sucesso!");
+      }
+
       setIsAddActivityOpen(false);
     } catch (error) {
       showError("Erro ao criar atividade");
+      console.error(error);
+    } finally {
+      setUploadingActivityPhoto(false);
     }
   };
 
@@ -225,12 +257,38 @@ export default function DashboardPage() {
         showError("Nenhuma atividade selecionada para edição");
         return;
       }
-      const updates = {
+
+      setUploadingActivityPhoto(true);
+
+      const updates: Partial<Activity> = {
         title: formData.get("activity-title") as string,
         responsible: formData.get("responsible") as string,
         spots: Number.parseInt(formData.get("spots") as string),
         description: formData.get("activity-description") as string,
       };
+
+      // Handle photo upload if a new file was selected
+      const photoFile = formData.get("activity-photo") as File;
+      if (photoFile && photoFile.size > 0) {
+        try {
+          const photoUrl = await uploadActivityPhoto(
+            selectedActivity.id,
+            photoFile
+          );
+          updates.photo_url = photoUrl;
+          showSuccess("Atividade e foto atualizadas com sucesso!");
+        } catch (photoError) {
+          console.error("Photo upload failed:", photoError);
+          const errorMessage =
+            photoError instanceof Error
+              ? photoError.message
+              : "Erro desconhecido no upload";
+          showError(
+            `Erro no upload da foto: ${errorMessage}. Outras informações foram salvas.`
+          );
+        }
+      }
+
       const updatedActivity = await updateActivity(
         selectedActivity.id,
         updates
@@ -240,11 +298,18 @@ export default function DashboardPage() {
           a.id === selectedActivity.id ? updatedActivity : a
         )
       );
+      setSelectedActivity(updatedActivity);
       setIsEditingActivity(false);
       setIsActivityDetailOpen(false);
-      showSuccess("Atividade atualizada com sucesso!");
+
+      if (!photoFile || photoFile.size === 0) {
+        showSuccess("Atividade atualizada com sucesso!");
+      }
     } catch (error) {
       showError("Erro ao atualizar atividade");
+      console.error(error);
+    } finally {
+      setUploadingActivityPhoto(false);
     }
   };
 
@@ -485,13 +550,20 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="activity-photo">Foto</Label>
-                    <Input
-                      id="activity-photo"
-                      name="activity-photo"
-                      type="file"
-                      accept="image/*"
-                    />
+                    <Label htmlFor="activity-photo">Foto da Atividade</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="activity-photo"
+                        name="activity-photo"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={uploadingActivityPhoto}
+                      />
+                      <Camera className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Formatos aceitos: JPEG, PNG, WebP. Tamanho máximo: 5MB
+                    </p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -505,8 +577,9 @@ export default function DashboardPage() {
                   <Button
                     type="submit"
                     className="bg-[#237C52] hover:bg-[#7f6e62]"
+                    disabled={uploadingActivityPhoto}
                   >
-                    Criar
+                    {uploadingActivityPhoto ? "Criando..." : "Criar"}
                   </Button>
                 </div>
               </form>
@@ -515,132 +588,132 @@ export default function DashboardPage() {
         </div>
       </div>
 
-
-
-
-
-
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <Card className="bg-[#175D3C] backdrop-blur-sm relative group text-white">
-    <CardHeader className="absolute top-2 right-2 z-10 flex flex-row items-center justify-end p-0">
-      <Dialog
-        open={isUploadModalOpen}
-        onOpenChange={setIsUploadModalOpen}
-      >
-        <DialogTrigger asChild>
-          <Button variant="ghost" size="icon" className="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm">
-            <Edit className="w-4 h-4 text-white hover:text-gray-300" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-gray-600 mb-4">
-              Selecione até 5 novas imagens. As imagens antigas serão
-              substituídas.
-            </p>
-            <Input
-              id="image-upload"
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              ref={fileInputRef}
-              disabled={isUploading}
-            />
-            {isUploading && (
-              <p className="text-sm text-blue-600 mt-2">Enviando...</p>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </CardHeader>
-    <CardContent className="p-0">
-      {carouselImages.length > 0 ? (
-        <Carousel className="w-full h-full">
-          <CarouselContent className="-ml-1">
-            {carouselImages.map((img, index) => (
-              <CarouselItem key={img.image_url} className="p-0 pl-1"> 
-                <div className="p-0 ">
-                  <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border-2 border-[#175D3C]">
-                      <Image
-                        src={img.image_url}
-                        alt={`Imagem da galeria ${index + 1}`}
-                        width={400}
-                        height={200}
-                        className="object-contain w-full h-full"
-                        priority={index === 0}
-                      />
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="bg-[#175D3C] backdrop-blur-sm relative group text-white">
+          <CardHeader className="absolute top-2 right-2 z-10 flex flex-row items-center justify-end p-0">
+            <Dialog
+              open={isUploadModalOpen}
+              onOpenChange={setIsUploadModalOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm"
+                >
+                  <Edit className="w-4 h-4 text-white hover:text-gray-300" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Selecione até 5 novas imagens. As imagens antigas serão
+                    substituídas.
+                  </p>
+                  <Input
+                    id="image-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    ref={fileInputRef}
+                    disabled={isUploading}
+                  />
+                  {isUploading && (
+                    <p className="text-sm text-blue-600 mt-2">Enviando...</p>
+                  )}
                 </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
-          <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
-        </Carousel>
-      ) : (
-        <div className="h-[280px] flex items-center justify-center text-white/70 p-4 text-center border-2 border-dashed border-white/30 rounded-lg m-4">
-          <p>
-            Nenhuma imagem na galeria. Clique no ícone de editar para
-            adicionar.
-          </p>
-        </div>
-      )}
-    </CardContent>
-  </Card>
-  <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
-    <CardHeader>
-      <CardTitle className="text-[#7f6e62] text-lg">Análise da Semana</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={chartData} barCategoryGap="20%">
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
-          <XAxis dataKey="day" axisLine={false} tickLine={false} />
-          <YAxis hide />
-          <YAxis hide />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ fill: "rgba(213, 196, 170, 0.3)" }}
-          />
-          <Legend
-            verticalAlign="bottom"
-            align="right"
-            height={36}
-            iconSize={8}
-            iconType="circle"
-          />
-          <Bar
-            dataKey="presences"
-            name="Presenças"
-            fill="#16a34a"
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar
-            dataKey="absences"
-            name="Faltas"
-            fill="#dc2626"
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar
-            dataKey="justified"
-            name="Justificadas"
-            fill="#f97316"
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </CardContent>
-  </Card>
-</div>
-
-
-
-
-
+              </DialogContent>
+            </Dialog>
+          </CardHeader>
+          <CardContent className="p-0">
+            {carouselImages.length > 0 ? (
+              <Carousel className="w-full h-full">
+                <CarouselContent className="-ml-1">
+                  {carouselImages.map((img, index) => (
+                    <CarouselItem key={img.image_url} className="p-0 pl-1">
+                      <div className="p-0 ">
+                        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border-2 border-[#175D3C]">
+                          <Image
+                            src={img.image_url}
+                            alt={`Imagem da galeria ${index + 1}`}
+                            width={400}
+                            height={200}
+                            className="object-contain w-full h-full"
+                            priority={index === 0}
+                          />
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
+                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
+              </Carousel>
+            ) : (
+              <div className="h-[280px] flex items-center justify-center text-white/70 p-4 text-center border-2 border-dashed border-white/30 rounded-lg m-4">
+                <p>
+                  Nenhuma imagem na galeria. Clique no ícone de editar para
+                  adicionar.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-[#7f6e62] text-lg">
+              Análise da Semana
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={chartData} barCategoryGap="20%">
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#e0e0e0"
+                />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <YAxis hide />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: "rgba(213, 196, 170, 0.3)" }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="right"
+                  height={36}
+                  iconSize={8}
+                  iconType="circle"
+                />
+                <Bar
+                  dataKey="presences"
+                  name="Presenças"
+                  fill="#16a34a"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="absences"
+                  name="Faltas"
+                  fill="#dc2626"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="justified"
+                  name="Justificadas"
+                  fill="#f97316"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
@@ -1115,6 +1188,25 @@ export default function DashboardPage() {
                       required
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-activity-photo">
+                      Nova Foto da Atividade (opcional)
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="edit-activity-photo"
+                        name="activity-photo"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={uploadingActivityPhoto}
+                      />
+                      <Camera className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Deixe em branco para manter a foto atual. Formatos: JPEG,
+                      PNG, WebP. Máximo: 5MB
+                    </p>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
@@ -1127,8 +1219,11 @@ export default function DashboardPage() {
                   <Button
                     type="submit"
                     className="bg-[#237C52] hover:bg-[#7f6e62]"
+                    disabled={uploadingActivityPhoto}
                   >
-                    Salvar Alterações
+                    {uploadingActivityPhoto
+                      ? "Salvando..."
+                      : "Salvar Alterações"}
                   </Button>
                 </div>
               </form>
