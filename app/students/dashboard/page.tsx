@@ -74,15 +74,25 @@ import {
   type CarouselImage,
 } from "@/lib/carousel";
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    // Get the data from the first payload item
     const data = payload[0].payload;
+
+    console.log("🔍 DEBUG Tooltip - Full data object:", data); // Debug log
+
     return (
       <div className="custom-tooltip bg-white p-3 border border-gray-300 rounded-md shadow-lg text-sm">
-        <p className="label font-semibold text-[#7f6e62] mb-1">{`Dia: ${data.day}`}</p>
-        <p className="intro text-green-700">{`Presenças: ${data.presences}`}</p>
-        <p className="intro text-red-700">{`Faltas: ${data.absences}`}</p>
-        <p className="intro text-yellow-600">{`Justificadas: ${data.justified}`}</p>
+        <p className="label font-semibold text-[#7f6e62] mb-1">{`Dia: ${
+          label || data.day
+        }`}</p>
+        <p className="intro text-green-700">{`Presenças: ${
+          data.presences || 0
+        }`}</p>
+        <p className="intro text-red-700">{`Faltas: ${data.absences || 0}`}</p>
+        <p className="intro text-orange-600">{`Justificadas: ${
+          data.justified || 0
+        }`}</p>
       </div>
     );
   }
@@ -162,6 +172,8 @@ export default function DashboardPage() {
           getWeeklyAttendanceSummary(),
           getCarouselImages(),
         ]);
+
+        console.log(summaryData, "Weekly summary data fetched");
 
         setActivities(activitiesData);
         setReminders(remindersData);
@@ -679,9 +691,8 @@ export default function DashboardPage() {
                 />
                 <XAxis dataKey="day" axisLine={false} tickLine={false} />
                 <YAxis hide />
-                <YAxis hide />
                 <Tooltip
-                  content={<CustomTooltip />}
+                  content={CustomTooltip}
                   cursor={{ fill: "rgba(213, 196, 170, 0.3)" }}
                 />
                 <Legend

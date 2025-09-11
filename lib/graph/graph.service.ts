@@ -1,73 +1,95 @@
 import { getAttendance } from "../attendance/attendance.service";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // ==================================================================
-// FUNÇÃO DO GRÁFICO (REAPLICADA COM A LÓGICA MAIS ROBUSTA)
+// FUNÇÃO DO GRÁFICO (MONDAY TO SUNDAY FIXED WEEK)
 // ==================================================================
 export async function getWeeklyAttendanceSummary(): Promise<
   { day: string; presences: number; absences: number; justified: number }[]
 > {
-  console.log("✅ Servidor: Buscando resumo de chamadas da semana...");
+  console.log(
+    "✅ Servidor: Buscando resumo de chamadas da semana atual (Segunda a Domingo)..."
+  );
 
   try {
-    // 1. Reutilizamos sua função existente para buscar os registros.
-    const allAttendanceData = await getAttendance();
+    // 1. Get current week (Monday to Sunday)
+    const today = new Date();
+    const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 }); // 1 = Monday
+
+    // 2. Generate all 7 days of the current week
+    const weekDays = Array.from({ length: 7 }, (_, index) => {
+      const day = addDays(startOfCurrentWeek, index);
+      return {
+        date: format(day, "yyyy-MM-dd"),
+        dayName: format(day, "EEE", { locale: ptBR }).substring(0, 3),
+        fullDate: day,
+      };
+    });
+
     console.log(
-      `Encontrados ${allAttendanceData.length} registros de chamada no total para processar.`
+      `Semana atual: ${format(startOfCurrentWeek, "dd/MM/yyyy")} a ${format(
+        addDays(startOfCurrentWeek, 6),
+        "dd/MM/yyyy"
+      )}`
     );
 
-    // 2. Usamos um objeto simples para a contagem
-    const summary: {
-      [date: string]: {
-        presences: number;
-        absences: number;
-        justified: number;
-      };
-    } = {};
+    // 3. Get all attendance data
+    const allAttendanceData = await getAttendance();
+    console.log(
+      `Encontrados ${allAttendanceData.length} registros de chamada no total.`
+    );
 
-    // 3. Criamos os "potes" de contagem dinamicamente a partir dos dados recebidos
-    for (const record of allAttendanceData) {
-      // Se o pote para esta data ainda não existe, crie-o.
-      if (!summary[record.date]) {
-        summary[record.date] = { presences: 0, absences: 0, justified: 0 };
+    // 4. Create summary for the current week
+    const chartData = weekDays.map(({ date, dayName }) => {
+      // Filter attendance records for this specific day
+      const dayAttendance = allAttendanceData.filter(
+        (record) => record.date === date
+      );
+
+      console.log(
+        `📅 Processando ${date} (${dayName}): ${dayAttendance.length} registros encontrados`
+      );
+
+      let presences = 0;
+      let absences = 0;
+      let justified = 0;
+
+      // Count attendance for this day
+      for (const record of dayAttendance) {
+        const status = record.status.toLowerCase();
+        console.log(
+          `  - Aluno: ${record.student_id}, Status: "${record.status}" -> normalizado: "${status}"`
+        );
+
+        if (status === "presente" || status === "present") {
+          presences++;
+        } else if (status === "faltou" || status === "absent") {
+          absences++;
+        } else if (status === "justificada" || status === "justified") {
+          justified++;
+        } else {
+          console.warn(`  ⚠️ Status não reconhecido: "${record.status}"`);
+        }
       }
 
-      // 4. Adicionamos a contagem ao pote correto
-      const status = record.status.toLowerCase();
-      if (status === "presente" || status === "present") {
-        summary[record.date].presences++;
-      } else if (status === "faltou" || status === "absent") {
-        summary[record.date].absences++;
-      } else if (status === "justificada" || status === "justified") {
-        summary[record.date].justified++;
-      }
-    }
-
-    // 5. Transformamos o objeto em uma lista e ordenamos pela data mais recente
-    const sortedSummary = Object.entries(summary)
-      .map(([date, counts]) => ({
-        date: date,
-        ...counts,
-      }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    // 6. Pegamos apenas os 7 dias mais recentes que tiveram aula
-    const latest7DaysWithData = sortedSummary.slice(0, 7);
-
-    // 7. Formatamos para o gráfico
-    const chartData = latest7DaysWithData
-      .map(({ date, presences, absences, justified }) => ({
-        day: format(new Date(date + "T12:00:00Z"), "EEE", { locale: ptBR })
-          .charAt(0)
-          .toUpperCase(),
+      const dayResult = {
+        day: dayName,
         presences,
         absences,
         justified,
-      }))
-      .reverse(); // Inverte para mostrar do mais antigo para o mais novo
+      };
 
-    console.log("✅ Servidor: Resumo da semana gerado com sucesso:", chartData);
+      console.log(
+        `📊 Resultado para ${date}: P:${presences}, F:${absences}, J:${justified}`
+      );
+      return dayResult;
+    });
+
+    console.log(
+      "✅ Servidor: Resumo da semana atual (Segunda a Domingo) gerado:",
+      chartData
+    );
     return chartData;
   } catch (error) {
     console.error("❌ Erro geral na função getWeeklyAttendanceSummary:", error);
