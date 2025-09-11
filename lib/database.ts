@@ -5,7 +5,11 @@ export const supabaseDatabase = createClient();
 // File upload utilities
 export async function uploadFile(
   file: File,
-  bucket: "fotos_alunos" | "fotos_atividades" | "fotos_mulheres",
+  bucket:
+    | "fotos_alunos"
+    | "fotos_atividades"
+    | "fotos_mulheres"
+    | "galeria_imagens",
   path: string
 ): Promise<string> {
   const { data, error } = await supabaseDatabase.storage
@@ -22,7 +26,11 @@ export async function uploadFile(
 }
 
 export async function deleteFile(
-  bucket: "fotos_alunos" | "fotos_atividades" | "fotos_mulheres",
+  bucket:
+    | "fotos_alunos"
+    | "fotos_atividades"
+    | "fotos_mulheres"
+    | "galeria_imagens",
   path: string
 ): Promise<void> {
   const { error } = await supabaseDatabase.storage.from(bucket).remove([path]);
