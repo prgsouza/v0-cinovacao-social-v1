@@ -71,11 +71,13 @@ export default function StudentsLayout({
   return (
     <PageContainer>
       <SidebarProvider>
-        <div className="flex w-full min-h-screen bg-gray-50">
-          <Sidebar className="bg-[#E6742D] backdrop-blur-sm border-r border-none">
-            <SidebarContent className="bg-[#E6742D] text-white">
-              <div className="p-4 flex justify-center border-b bg-[#E6742D]">
-                <div className="">
+        <div className="relative flex w-full min-h-screen">
+          <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+
+          <div className="relative z-10 flex w-full">
+            <Sidebar className="bg-[#E6742D] backdrop-blur-sm border-r border-none">
+              <SidebarContent className="bg-[#E6742D] text-white">
+                <div className="p-4 flex justify-center border-b bg-[#E6742D]">
                   <Image
                     src="/images/gris-logo.png"
                     alt="GRIS Logo"
@@ -84,39 +86,39 @@ export default function StudentsLayout({
                     className="pt-3 pr-4"
                   />
                 </div>
-              </div>
-              {sidebarItems.map((group) => (
-                <SidebarGroup key={group.title} className="pl-4">
-                  <SidebarGroupLabel className="text-white text-[1.25rem] font-bold">
-                    {group.title}
-                  </SidebarGroupLabel>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {group.items.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                          <Link href={item.href} className="w-full">
-                            <SidebarMenuButton
-                              className={`${
-                                pathname === item.href
-                                  ? "bg-white font-medium text-black/90"
-                                  : "text-white/85 font-medium hover:bg-white"
-                              }`}
-                            >
-                              <item.icon className="w-4 h-4" />
-                              <span>{item.title}</span>
-                            </SidebarMenuButton>
-                          </Link>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              ))}
-            </SidebarContent>
-          </Sidebar>
+                {sidebarItems.map((group) => (
+                  <SidebarGroup key={group.title} className="pl-4">
+                    <SidebarGroupLabel className="text-white text-[1.25rem] font-bold">
+                      {group.title}
+                    </SidebarGroupLabel>
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {group.items.map((item) => (
+                          <SidebarMenuItem key={item.href}>
+                            <Link href={item.href} className="w-full">
+                              <SidebarMenuButton
+                                className={`${
+                                  pathname === item.href
+                                    ? "bg-white font-medium text-black/90"
+                                    : "text-white/85 font-medium hover:bg-white"
+                                }`}
+                              >
+                                <item.icon className="w-4 h-4" />
+                                <span>{item.title}</span>
+                              </SidebarMenuButton>
+                            </Link>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                ))}
+              </SidebarContent>
+            </Sidebar>
 
           <MainContent>{children}</MainContent>
         </div>
+
       </SidebarProvider>
     </PageContainer>
   );

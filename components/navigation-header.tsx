@@ -32,7 +32,7 @@ export function NavigationHeader({ title, showBackButton = true, showLogout = tr
               {showBackButton && (
                 <Link
                   href="/"
-                  className="text-sm text-[#88957d] hover:text-[#7f6e62] transition-colors flex items-center gap-1"
+                  className="text-sm text-[#237C52] hover:text-[#7f6e62] transition-colors flex items-center gap-1"
                 >
                   <Home className="w-3 h-3" />
                   Voltar ao Hub

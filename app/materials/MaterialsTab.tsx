@@ -143,7 +143,7 @@ export default function MaterialsTab({
     <div className="space-y-8">
       {/* Shortage Carousel */}
       <div>
-        <h2 className="text-2xl font-bold text-[#7f6e62] text-center mb-6">
+        <h2 className="text-2xl font-bold text-[#ffffff] text-center mb-6">
           Materiais que estão em falta
         </h2>
         <div className="flex gap-4 overflow-x-auto pb-4">
@@ -192,7 +192,7 @@ export default function MaterialsTab({
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex gap-2 flex-1 max-w-md">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white w-4 h-4" />
             <Input
               placeholder="Buscar materiais..."
               value={searchTerm}
@@ -323,7 +323,7 @@ export default function MaterialsTab({
 
       {/* Materials Grid */}
       <div>
-        <h3 className="text-xl font-semibold text-[#7f6e62] mb-4">
+        <h3 className="text-xl font-semibold text-[#ffffff] mb-4">
           Materiais Gerais
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

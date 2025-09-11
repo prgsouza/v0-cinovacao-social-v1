@@ -28,7 +28,7 @@ export default function MaterialsLayout({ children, activeTab, setActiveTab }: M
   return (
     <PageContainer>
       <SidebarProvider>
-        <div className="flex w-full min-h-screen bg-gray-50">
+        <div className="flex w-full min-h-screen bg-trasparent">
           <Sidebar className="bg-[#E7732D] text-white border-r border-none">
             <SidebarContent className="bg-[#E7732D] text-white">
               <div className="p-4 border-b flex justify-center bg-[#E7732D]">
