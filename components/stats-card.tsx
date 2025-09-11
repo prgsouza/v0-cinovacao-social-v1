@@ -19,7 +19,7 @@ export function StatsCard({ title, value, description, icon: Icon, trend, childr
     <Card className="bg-white/90 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-[#7f6e62]">{title}</CardTitle>
-        {Icon && <Icon className="h-4 w-4 text-[#88957d]" />}
+        {Icon && <Icon className="h-4 w-4 text-[#237C52]" />}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold text-[#7f6e62]">{value}</div>

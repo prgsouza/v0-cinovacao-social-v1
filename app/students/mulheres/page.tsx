@@ -240,8 +240,8 @@ export default function MulheresPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
-        <h1 className="text-3xl font-bold text-[#7f6e62]">Mulheres</h1>
+      <div className="space-y-6 bg-transparent p-4 rounded-xl">
+        <h1 className="text-3xl font-bold text-[#ffffff]">Mulheres</h1>
         <div className="text-center py-8">
           <p className="text-gray-600">Carregando dados do banco...</p>
         </div>
@@ -250,13 +250,13 @@ export default function MulheresPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[#EAE8E8] p-4 rounded-xl">
+    <div className="space-y-6 bg-transparent p-4 rounded-xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Mulheres</h1>
+        <h1 className="text-3xl font-bold text-white">Mulheres</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Card de Chamada */}
-        <Card className="lg:col-span-2 bg-[#E6742D] backdrop-blur-sm relative">
+        <Card className="lg:col-span-2 bg-[#F4A460] backdrop-blur-sm relative">
           <CardHeader className="pb-3">
             <CardTitle className="text-white font-bold">Chamada</CardTitle>
             {!canSaveAttendance() && (
@@ -275,7 +275,7 @@ export default function MulheresPage() {
                   key={woman.id}
                   className={`rounded-lg p-3 flex items-center justify-between min-h-[60px] transition-all ${
                     attendanceData[woman.id]
-                      ? "bg-[#FF6B35]"
+                      ? "bg-[#E6742D]"
                       : "bg-[#217E53] border-2 border-dashed border-[#FFFF]"
                   }`}
                 >
@@ -519,7 +519,7 @@ export default function MulheresPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                     disabled={uploadingPhoto}
                   >
                     {uploadingPhoto ? "Enviando foto..." : "Cadastrar"}
@@ -662,7 +662,7 @@ export default function MulheresPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#88957d] hover:bg-[#7f6e62]"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
                     disabled={uploadingPhoto}
                   >
                     {uploadingPhoto ? "Salvando foto..." : "Salvar Alterações"}
