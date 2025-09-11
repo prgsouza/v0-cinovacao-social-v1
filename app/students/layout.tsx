@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { PageContainer } from "@/components/page-container";
 import {
@@ -44,6 +45,21 @@ const sidebarItems = [
     ],
   },
 ];
+
+function MainContent({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  return (
+    <main className="flex-1 relative">
+      {/* Always visible toggle button with better positioning */}
+      <div className="fixed top-4 left-4 z-40">
+        <SidebarTrigger className="text-white bg-[#E6742D] hover:bg-[#d5632a] hover:shadow-lg shadow-md rounded-md transition-all duration-200" />
+      </div>
+      {/* Add top padding to content to avoid overlap */}
+      <div className="p-6 pt-16">{children}</div>
+    </main>
+  );
+}
 
 export default function StudentsLayout({
   children,
@@ -99,12 +115,7 @@ export default function StudentsLayout({
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 relative">
-            <div className="absolute top-5 left-5 z-30">
-              <SidebarTrigger className="text-white bg-[#E6742D] hover:shadow-2 hover:bg-[#E6742D]" />
-            </div>
-            <div className="p-6 pt-16 lg:pt-6">{children}</div>
-          </main>
+          <MainContent>{children}</MainContent>
         </div>
       </SidebarProvider>
     </PageContainer>
