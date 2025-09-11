@@ -12,13 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Camera, Edit, Search } from "lucide-react";
+import { Plus, Camera, Edit, Search, Trash2 } from "lucide-react";
 import { useNotification } from "@/hooks/use-notification";
 import { Student } from "@/lib/student/student.dto";
 import {
@@ -26,6 +27,7 @@ import {
   createStudent,
   updateStudent,
   uploadStudentPhoto,
+  deleteStudent,
 } from "@/lib/student/student.service";
 
 export default function AlunosPage() {
@@ -37,6 +39,7 @@ export default function AlunosPage() {
   const [isEditingStudent, setIsEditingStudent] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -165,6 +168,24 @@ export default function AlunosPage() {
       showError("Erro ao atualizar aluno");
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!selectedStudent) return;
+
+    try {
+      await deleteStudent(selectedStudent.id);
+      showSuccess(`${selectedStudent.name} foi excluído com sucesso.`);
+      setIsDeleteModalOpen(false); // Fecha o modal de confirmação
+      setSelectedStudent(null); // Fecha o modal de perfil
+      // Atualiza a lista removendo o estudante deletado
+      setStudents(students.filter((s) => s.id !== selectedStudent.id));
+    } catch (error) {
+      showError(
+        "Erro ao excluir estudante. Verifique as políticas de DELETE no Supabase."
+      );
+      console.error(error);
     }
   };
 
@@ -563,6 +584,13 @@ export default function AlunosPage() {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
+                    variant="destructive"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir
+                  </Button>
+                  <Button
                     variant="outline"
                     onClick={() => setSelectedStudent(null)}
                   >
@@ -578,6 +606,31 @@ export default function AlunosPage() {
                 </div>
               </div>
             ))}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription className="pt-2">
+              Você tem certeza que deseja excluir permanentemente o registro de{" "}
+              <strong>{selectedStudent?.name}</strong>? Esta ação não pode ser
+              desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteStudent}>
+              Confirmar Exclusão
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
