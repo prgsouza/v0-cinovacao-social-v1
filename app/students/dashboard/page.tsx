@@ -889,7 +889,7 @@ export default function DashboardPage() {
                 {activities.map((a) => (
                   <div
                     key={a.id}
-                    className="p-4 rounded-md border border-gray-200 flex justify-between items-start min-h-[6rem]"
+                    className="p-3 rounded-md border border-gray-200 flex flex-col gap-4"
                   >
                     <div
                       onClick={() => {
@@ -897,7 +897,7 @@ export default function DashboardPage() {
                         setIsActivityDetailOpen(true);
                         setIsEditingActivity(false);
                       }}
-                      className="cursor-pointer flex-1 flex gap-3"
+                      className="cursor-pointer flex-1 flex gap-3 items-center"
                     >
                       <div className="w-28 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                         <Image
@@ -917,13 +917,17 @@ export default function DashboardPage() {
                             {format(
                               new Date(a.date + "T12:00:00Z"),
                               "dd 'de' MMMM",
-                              { locale: ptBR }
+                              {
+                                locale: ptBR,
+                              }
                             )}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 ml-2">
+
+                    {/* --- Botões de Atividades --- */}
+                    <div className="flex gap-2 justify-end">
                       <Button
                         size="sm"
                         variant="outline"
@@ -1110,15 +1114,16 @@ export default function DashboardPage() {
               onClick={async () => {
                 if (!activityToDelete) return;
                 try {
-                  await import("@/lib/database").then(({ deleteActivity }) =>
-                    deleteActivity(activityToDelete.id)
+                  await import("@/lib/activity/activity.service").then(
+                    ({ deleteActivity }) => deleteActivity(activityToDelete.id)
                   );
                   setActivities(
                     activities.filter((a) => a.id !== activityToDelete.id)
                   );
                   showSuccess("Atividade excluída!");
                   setActivityToDelete(null);
-                } catch {
+                } catch (error) {
+                  console.error("Erro ao excluir atividade:", error);
                   showError("Erro ao excluir atividade");
                 }
               }}
