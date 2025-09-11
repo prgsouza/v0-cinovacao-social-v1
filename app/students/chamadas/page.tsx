@@ -162,7 +162,7 @@ function ChamadaContent() {
         )}
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => router.push("/students/dashboard")}>Cancelar</Button>
-          <Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={handleSaveAttendance}>Salvar Chamada</Button>
+          <Button className="bg-[#237C52] hover:bg-[#7f6e62]" onClick={handleSaveAttendance}>Salvar Chamada</Button>
         </div>
       </div>
       <ConfirmationDialog

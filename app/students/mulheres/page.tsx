@@ -312,7 +312,7 @@ export default function MulheresPage() {
                     Excluir
                   </Button>
                   <Button variant="outline" onClick={() => setSelectedWoman(null)}>Fechar</Button>
-                  <Button className="bg-[#88957d] hover:bg-[#7f6e62]" onClick={() => setIsEditingWoman(true)}><Edit className="w-4 h-4 mr-2" />Editar</Button>
+                  <Button className="bg-[#237C52] hover:bg-[#7f6e62]" onClick={() => setIsEditingWoman(true)}><Edit className="w-4 h-4 mr-2" />Editar</Button>
                 </div>
               </div>
             ))}
