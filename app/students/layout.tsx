@@ -116,9 +116,9 @@ export default function StudentsLayout({
               </SidebarContent>
             </Sidebar>
 
-          <MainContent>{children}</MainContent>
+            <MainContent>{children}</MainContent>
+          </div>
         </div>
-
       </SidebarProvider>
     </PageContainer>
   );
