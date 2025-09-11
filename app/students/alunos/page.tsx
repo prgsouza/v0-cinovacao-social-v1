@@ -12,19 +12,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Camera, Edit, Search } from "lucide-react";
+import { Plus, Camera, Edit, Search, Trash2 } from "lucide-react";
 import { useNotification } from "@/hooks/use-notification";
 import { Student } from "@/lib/student/student.dto";
 import {
   getStudents,
   createStudent,
   updateStudent,
+  uploadStudentPhoto,
+  deleteStudent,
 } from "@/lib/student/student.service";
 
 export default function AlunosPage() {
@@ -35,6 +38,8 @@ export default function AlunosPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isEditingStudent, setIsEditingStudent] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const filteredStudents = students.filter((student) =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,6 +66,8 @@ export default function AlunosPage() {
 
   const handleAddStudent = async (formData: FormData) => {
     try {
+      setUploadingPhoto(true);
+
       const newStudent = {
         name: formData.get("student-name") as string,
         community: formData.get("community") as string,
@@ -69,21 +76,56 @@ export default function AlunosPage() {
         guardian_phone: formData.get("guardian-phone") as string,
         observations: formData.get("observations") as string,
         can_go_alone: formData.get("can-go-alone") === "on",
-        photo_url: undefined,
+        photo_url: formData.get("student-photo")
+          ? (formData.get("student-photo") as string)
+          : undefined,
       };
+
+      // Create the student first to get an ID
       const created = await createStudent(newStudent);
-      setStudents([...students, created]);
+
+      // Handle photo upload if a file was selected
+      const photoFile = formData.get("student-photo") as File;
+      if (photoFile && photoFile.size > 0) {
+        try {
+          const photoUrl = await uploadStudentPhoto(photoFile, created.id);
+          // Update the student with the photo URL
+          const updatedStudent = await updateStudent(created.id, {
+            photo_url: photoUrl,
+          });
+          setStudents([...students, updatedStudent]);
+        } catch (photoError) {
+          console.error("Photo upload failed:", photoError);
+          // Still add the student even if photo upload fails
+          setStudents([...students, created]);
+          const errorMessage =
+            photoError instanceof Error
+              ? photoError.message
+              : "Erro desconhecido no upload";
+          showError(
+            `Aluno cadastrado, mas houve erro no upload da foto: ${errorMessage}`
+          );
+        }
+      } else {
+        setStudents([...students, created]);
+      }
+
       showSuccess("Aluno cadastrado com sucesso!");
       setIsAddStudentOpen(false);
     } catch (error) {
+      console.error("Error creating student:", error);
       showError("Erro ao cadastrar aluno");
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
   const handleEditStudent = async (formData: FormData) => {
     if (!selectedStudent) return;
     try {
-      const updates = {
+      setUploadingPhoto(true);
+
+      const updates: Partial<Student> = {
         name: formData.get("student-name") as string,
         community: formData.get("community") as string,
         age: Number.parseInt(formData.get("age") as string),
@@ -92,6 +134,28 @@ export default function AlunosPage() {
         observations: formData.get("observations") as string,
         can_go_alone: formData.get("can-go-alone") === "on",
       };
+
+      // Handle photo upload if a new file was selected
+      const photoFile = formData.get("student-photo") as File;
+      if (photoFile && photoFile.size > 0) {
+        try {
+          const photoUrl = await uploadStudentPhoto(
+            photoFile,
+            selectedStudent.id
+          );
+          updates.photo_url = photoUrl;
+        } catch (photoError) {
+          console.error("Photo upload failed:", photoError);
+          const errorMessage =
+            photoError instanceof Error
+              ? photoError.message
+              : "Erro desconhecido no upload";
+          showError(
+            `Erro no upload da foto: ${errorMessage}. Outras informações foram salvas.`
+          );
+        }
+      }
+
       const updatedStudent = await updateStudent(selectedStudent.id, updates);
       setStudents(
         students.map((s) => (s.id === selectedStudent.id ? updatedStudent : s))
@@ -100,7 +164,28 @@ export default function AlunosPage() {
       setIsEditingStudent(false);
       showSuccess("Aluno atualizado com sucesso!");
     } catch (error) {
+      console.error("Error updating student:", error);
       showError("Erro ao atualizar aluno");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!selectedStudent) return;
+
+    try {
+      await deleteStudent(selectedStudent.id);
+      showSuccess(`${selectedStudent.name} foi excluído com sucesso.`);
+      setIsDeleteModalOpen(false); // Fecha o modal de confirmação
+      setSelectedStudent(null); // Fecha o modal de perfil
+      // Atualiza a lista removendo o estudante deletado
+      setStudents(students.filter((s) => s.id !== selectedStudent.id));
+    } catch (error) {
+      showError(
+        "Erro ao excluir estudante. Verifique as políticas de DELETE no Supabase."
+      );
+      console.error(error);
     }
   };
 
@@ -153,9 +238,18 @@ export default function AlunosPage() {
                       name="student-photo"
                       type="file"
                       accept="image/*"
+                      disabled={uploadingPhoto}
                     />
                     <Camera className="w-5 h-5 text-gray-400" />
                   </div>
+                  <p className="text-xs text-gray-500">
+                    Formatos aceitos: JPEG, PNG, WebP. Tamanho máximo: 5MB
+                  </p>
+                  {uploadingPhoto && (
+                    <p className="text-sm text-blue-600">
+                      Fazendo upload da foto...
+                    </p>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="age">Idade</Label>
@@ -218,8 +312,9 @@ export default function AlunosPage() {
                 <Button
                   type="submit"
                   className="bg-[#237C52] hover:bg-[#7f6e62]"
+                  disabled={uploadingPhoto}
                 >
-                  Cadastrar Aluno
+                  {uploadingPhoto ? "Salvando..." : "Cadastrar Aluno"}
                 </Button>
               </div>
             </form>
@@ -251,7 +346,7 @@ export default function AlunosPage() {
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16">
                     <AvatarImage
-                      src={student.photo_url || "/placeholder.svg"}
+                      src={student.photo_url || "/placeholder-user.jpg"}
                       alt={student.name}
                     />
                     <AvatarFallback>
@@ -340,6 +435,32 @@ export default function AlunosPage() {
                       required
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-student-photo">Foto do Aluno</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="edit-student-photo"
+                        name="student-photo"
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingPhoto}
+                      />
+                      <Camera className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Formatos aceitos: JPEG, PNG, WebP. Tamanho máximo: 5MB
+                    </p>
+                    {uploadingPhoto && (
+                      <p className="text-sm text-blue-600">
+                        Fazendo upload da foto...
+                      </p>
+                    )}
+                    {selectedStudent.photo_url && (
+                      <p className="text-sm text-gray-600">
+                        Foto atual será substituída se você selecionar uma nova
+                      </p>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="edit-can-go-alone"
@@ -399,8 +520,9 @@ export default function AlunosPage() {
                   <Button
                     type="submit"
                     className="bg-[#237C52] hover:bg-[#7f6e62]"
+                    disabled={uploadingPhoto}
                   >
-                    Salvar Alterações
+                    {uploadingPhoto ? "Salvando..." : "Salvar Alterações"}
                   </Button>
                 </div>
               </form>
@@ -409,7 +531,7 @@ export default function AlunosPage() {
                 <div className="flex items-center gap-4">
                   <Avatar className="w-20 h-20">
                     <AvatarImage
-                      src={selectedStudent.photo_url || "/placeholder.svg"}
+                      src={selectedStudent.photo_url || "/placeholder-user.jpg"}
                       alt={selectedStudent.name}
                     />
                     <AvatarFallback>
@@ -462,6 +584,13 @@ export default function AlunosPage() {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
+                    variant="destructive"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir
+                  </Button>
+                  <Button
                     variant="outline"
                     onClick={() => setSelectedStudent(null)}
                   >
@@ -477,6 +606,31 @@ export default function AlunosPage() {
                 </div>
               </div>
             ))}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription className="pt-2">
+              Você tem certeza que deseja excluir permanentemente o registro de{" "}
+              <strong>{selectedStudent?.name}</strong>? Esta ação não pode ser
+              desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteStudent}>
+              Confirmar Exclusão
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

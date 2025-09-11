@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { deleteFile, extractFilePathFromUrl, uploadFile } from "./database";
 
 export interface CarouselImage {
   id: string;
@@ -65,46 +66,92 @@ export async function setCarouselImages(
   );
   console.log("setCarouselImages: Dados recebidos:", images);
 
-  // Primeiro, deletar todas as imagens existentes (usando .gte para deletar tudo)
-  const { error: deleteError } = await supabase
-    .from("carousel_images")
-    .delete()
-    .gte("id", "00000000-0000-0000-0000-000000000000");
-  if (deleteError) {
-    console.error(
-      "setCarouselImages: Erro ao deletar imagens antigas:",
-      deleteError
-    );
-    throw deleteError;
-  }
-  console.log("setCarouselImages: Imagens antigas deletadas com sucesso");
+  try {
+    // First, get existing images to delete their files from storage
+    const { data: existingImages, error: fetchError } = await supabase
+      .from("carousel_images")
+      .select("image_url");
 
-  if (images.length === 0) {
+    if (fetchError) {
+      console.error(
+        "setCarouselImages: Erro ao buscar imagens existentes:",
+        fetchError
+      );
+    } else if (existingImages && existingImages.length > 0) {
+      console.log(
+        "setCarouselImages: Deletando",
+        existingImages.length,
+        "arquivos antigos do storage"
+      );
+
+      // Delete old files from storage
+      for (const image of existingImages) {
+        try {
+          const filePath = extractFilePathFromUrl(image.image_url);
+          if (filePath) {
+            await deleteFile("galeria_imagens", filePath);
+            console.log("✅ Arquivo antigo deletado do storage:", filePath);
+          }
+        } catch (storageError) {
+          console.warn(
+            "⚠️ Erro ao deletar arquivo antigo do storage:",
+            storageError
+          );
+          // Continue with the process even if individual file deletion fails
+        }
+      }
+    }
+
+    // Delete all database records
+    const { error: deleteError } = await supabase
+      .from("carousel_images")
+      .delete()
+      .gte("id", "00000000-0000-0000-0000-000000000000");
+
+    if (deleteError) {
+      console.error(
+        "setCarouselImages: Erro ao deletar registros do banco:",
+        deleteError
+      );
+      throw deleteError;
+    }
     console.log(
-      "setCarouselImages: Nenhuma imagem para inserir, retornando array vazio"
+      "setCarouselImages: Registros antigos deletados do banco com sucesso"
     );
-    return [];
+
+    if (images.length === 0) {
+      console.log(
+        "setCarouselImages: Nenhuma imagem para inserir, retornando array vazio"
+      );
+      return [];
+    }
+
+    // Insert new images
+    console.log("setCarouselImages: Inserindo", images.length, "novas imagens");
+    const { data, error: insertError } = await supabase
+      .from("carousel_images")
+      .insert(images)
+      .select();
+
+    if (insertError) {
+      console.error(
+        "setCarouselImages: Erro ao inserir novas imagens:",
+        insertError
+      );
+      console.error(
+        "setCarouselImages: Detalhes do erro:",
+        insertError.details
+      );
+      console.error("setCarouselImages: Mensagem:", insertError.message);
+      throw insertError;
+    }
+
+    console.log("setCarouselImages: Imagens inseridas com sucesso:", data);
+    return data || [];
+  } catch (error) {
+    console.error("setCarouselImages: Erro geral no processo:", error);
+    throw error;
   }
-
-  // Inserir as novas imagens
-  console.log("setCarouselImages: Inserindo", images.length, "novas imagens");
-  const { data, error: insertError } = await supabase
-    .from("carousel_images")
-    .insert(images)
-    .select();
-
-  if (insertError) {
-    console.error(
-      "setCarouselImages: Erro ao inserir novas imagens:",
-      insertError
-    );
-    console.error("setCarouselImages: Detalhes do erro:", insertError.details);
-    console.error("setCarouselImages: Mensagem:", insertError.message);
-    throw insertError;
-  }
-
-  console.log("setCarouselImages: Imagens inseridas com sucesso:", data);
-  return data || [];
 }
 
 // Função para fazer upload de um arquivo para o Supabase Storage
@@ -112,22 +159,16 @@ export async function uploadCarouselImage(
   file: File,
   path: string
 ): Promise<string> {
-  const bucket = "galeria_imagens"; // Bucket específico para a galeria
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, {
-      cacheControl: "3600",
-      upsert: true,
-    });
-
-  if (error) {
-    console.error("Erro no upload do arquivo:", error);
+  try {
+    console.log(
+      "uploadCarouselImage: Fazendo upload para galeria_imagens:",
+      path
+    );
+    const publicUrl = await uploadFile(file, "galeria_imagens", path);
+    console.log("✅ Upload do carousel realizado com sucesso:", publicUrl);
+    return publicUrl;
+  } catch (error) {
+    console.error("❌ Erro no upload do arquivo do carousel:", error);
     throw error;
   }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(data.path);
-
-  return publicUrl;
 }
