@@ -322,13 +322,13 @@ export default function AlunosPage() {
         </Dialog>
       </div>
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <Input
-          placeholder="Pesquisar alunos por nome..."
-          className="pl-10 bg-white/90 backdrop-blur-sm border-[#d5c4aa]/30"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 pointer-events-none" />
+          <Input
+            placeholder="Pesquisar alunos por nome..."
+            className="pl-12 bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#237C52] focus:border-[#237C52]"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            />
       </div>
       {loading ? (
         <div className="text-center py-8">
