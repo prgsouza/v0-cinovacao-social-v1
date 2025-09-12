@@ -90,7 +90,10 @@ export default function LendsTab({
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
+      <div className="flex justify-between bg-[#E6742D] p-4 rounded-lg sm:items-center">
+        <h3 className="text-3xl font-semibold text-[#ffffff]">
+          Empréstimos Registrados
+        </h3>
         <Dialog open={isAddLendOpen} onOpenChange={setIsAddLendOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#237C52] hover:bg-[#237C52] flex items-center gap-2">
@@ -249,9 +252,6 @@ export default function LendsTab({
       </div>
 
       <div>
-        <h3 className="text-xl font-semibold text-[#ffffff] mb-4">
-          Empréstimos Registrados
-        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {lends.map((lend) => {
             const material = materials.find((m) => m.id === lend.material_id);

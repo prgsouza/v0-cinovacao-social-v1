@@ -83,16 +83,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
     return (
       <div className="custom-tooltip bg-white p-3 border border-gray-300 rounded-md shadow-lg text-sm">
-        <p className="label font-semibold text-[#7f6e62] mb-1">{`Dia: ${
-          label || data.day
-        }`}</p>
-        <p className="intro text-green-700">{`Presenças: ${
-          data.presences || 0
-        }`}</p>
+        <p className="label font-semibold text-[#7f6e62] mb-1">{`Dia: ${label || data.day
+          }`}</p>
+        <p className="intro text-green-700">{`Presenças: ${data.presences || 0
+          }`}</p>
         <p className="intro text-red-700">{`Faltas: ${data.absences || 0}`}</p>
-        <p className="intro text-orange-600">{`Justificadas: ${
-          data.justified || 0
-        }`}</p>
+        <p className="intro text-orange-600">{`Justificadas: ${data.justified || 0
+          }`}</p>
       </div>
     );
   }
@@ -452,83 +449,89 @@ export default function DashboardPage() {
     <div className="space-y-6 bg-transparent rounded-xl">
       <div className="flex items-center justify-between bg-[#E6742D] p-4 rounded-lg">
         <h1 className="text-3xl font-bold text-[#ffffff]">Visão Geral</h1>
+
+
+        <CardHeader className="pt-1 pr-53">
+          <Dialog
+            open={isUploadModalOpen}
+            onOpenChange={setIsUploadModalOpen}
+          >
+            <DialogTrigger asChild className="">
+
+              <Button size="sm" className="bg-[#237C52] hover:bg-[#7f6e62] p-2">
+                <Plus className="w-4 h-4 mr-2"/>Adicionar Fotos à Galeria
+              </Button>
+
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecione até 5 novas imagens. As imagens antigas serão
+                  substituídas.
+                </p>
+                <Input
+                  id="image-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  ref={fileInputRef}
+                  disabled={isUploading}
+                />
+                {isUploading && (
+                  <p className="text-sm text-blue-600 mt-2">Enviando...</p>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+
+
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-[#175D3C] backdrop-blur-sm relative group text-white">
-          <CardHeader className="absolute top-2 right-2 z-10 flex flex-row items-center justify-end p-0">
-            <Dialog
-              open={isUploadModalOpen}
-              onOpenChange={setIsUploadModalOpen}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="w-8 h-8 bg-black/30 hover:bg-black/50 backdrop-blur-sm"
-                >
-                  <Edit className="w-4 h-4 text-white hover:text-gray-300" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Atualizar Imagens da Galeria</DialogTitle>
-                </DialogHeader>
-                <div className="py-4">
-                  <p className="text-sm text-gray-600 mb-4">
-                    Selecione até 5 novas imagens. As imagens antigas serão
-                    substituídas.
-                  </p>
-                  <Input
-                    id="image-upload"
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    ref={fileInputRef}
-                    disabled={isUploading}
-                  />
-                  {isUploading && (
-                    <p className="text-sm text-blue-600 mt-2">Enviando...</p>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-          </CardHeader>
-          <CardContent className="p-0">
-            {carouselImages.length > 0 ? (
-              <Carousel className="w-full h-full">
-                <CarouselContent className="-ml-1">
-                  {carouselImages.map((img, index) => (
-                    <CarouselItem key={img.image_url} className="p-0 pl-1">
-                      <div className="p-0 ">
-                        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg border-2 border-[#175D3C]">
-                          <Image
-                            src={img.image_url}
-                            alt={`Imagem da galeria ${index + 1}`}
-                            width={400}
-                            height={200}
-                            className="object-contain w-full h-full"
-                            priority={index === 0}
-                          />
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
-                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
-              </Carousel>
-            ) : (
-              <div className="h-[280px] flex items-center justify-center text-white/70 p-4 text-center border-2 border-dashed border-white/30 rounded-lg m-4">
-                <p>
-                  Nenhuma imagem na galeria. Clique no ícone de editar para
-                  adicionar.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative group mb-4">
+
+        {/* Card da Galeria */}
+
+
+        <CardContent className="border-none p-0">
+          {carouselImages.length > 0 ? (
+            <Carousel className="w-full h-full relative">
+              <CarouselContent>
+                {carouselImages.map((img, index) => (
+                  <CarouselItem key={img.image_url} className="w-full h-full">
+                    <div className="p-0 ">
+                      <Image
+                        src={img.image_url}
+                        alt={`Imagem da galeria ${index + 1}`}
+                        width={400}
+                        height={500}
+                        className="w-full h-[320px] object-cover rounded-lg"
+                        priority={index === 0}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
+              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-black/50 text-white border-white/20" />
+            </Carousel>
+          ) : (
+            <div className="h-[280px] flex items-center justify-center text-white/70 p-4 text-center border-2 border-dashed border-white/30 rounded-lg m-4">
+              <p>
+                Nenhuma imagem na galeria. Clique no ícone de editar para
+                adicionar.
+              </p>
+            </div>
+          )}
+        </CardContent>
+
+
+
+
         {/* Card Gráfico */}
         <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
           <CardHeader>
@@ -581,6 +584,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+
+      {/* Segunda linha: Calendário e Atividades */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white/90 backdrop-blur-sm overflow-y-auto max-h-[27rem] lg:min-h-[27rem]">
           <CardHeader>

@@ -99,24 +99,20 @@ function ChamadaContent() {
           <div className="text-sm text-white">{selectedDate?.toLocaleDateString("pt-BR")}</div>
         </div>
 
-
-
-
-
         {/* Alerta de Faltas Consecutivas*/}
         {atRiskStudents.length > 0 && (
-          <Card className="">
+          <Card className="bg-yellow-300 border-none text-black">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
+              <CardTitle className="flex items-center gap-2 ">
                 <TriangleAlert className="w-5 h-5" />
                 Alerta de Faltas
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-red-600">
+              <p className="text-sm ">
                 Atenção! Os seguintes alunos atingiram 3 ou mais faltas consecutivas:
               </p>
-              <ul className="mt-2 font-medium text-black grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+              <ul className="mt-2 flxex flex-col gap-1 list-disc list-inside texte-sm">
                 {atRiskStudents.map(student => (
                   <li key={student.id}>{student.name}</li>
                 ))}

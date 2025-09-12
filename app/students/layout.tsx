@@ -56,7 +56,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
         <SidebarTrigger className="text-white bg-[#E6742D] hover:bg-[#d5632a] hover:shadow-lg shadow-md rounded-md transition-all duration-200" />
       </div>
       {/* Add top padding to content to avoid overlap */}
-      <div className="p-6 pt-16">{children}</div>
+      <div className="p-6 pt-6">{children}</div>
     </main>
   );
 }
@@ -72,7 +72,7 @@ export default function StudentsLayout({
     <PageContainer>
       <SidebarProvider>
         <div className="relative flex w-full min-h-screen">
-          <div className="absolute inset-0 bg-black/30 pointer-events-none" />
+          <div className="absolute inset-0 bg-hidden pointer-events-none" />
 
           <div className="relative z-10 flex w-full">
             <Sidebar className="bg-[#E6742D] backdrop-blur-sm border-r border-none">

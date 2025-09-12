@@ -375,7 +375,7 @@ export default function AlunosPage() {
                       `mt-1 ` +
                       (student.can_go_alone
                         ? "bg-green-500 text-white"
-                        : "bg-yellow-500 text-black")
+                        : "bg-yellow-300 text-black")
                     }>
                       {student.can_go_alone ? "Independente" : "Acompanhado"}
                     </Badge>
