@@ -1,5 +1,3 @@
-// app/students/alunos/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -191,8 +189,21 @@ export default function AlunosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#ffffff]">Alunos</h1>
+      {/* Cabeçalho da Página */}
+
+      <div className="flex justify-between bg-[#E6742D] p-4 rounded-md ">
+        <h1 className="text-3xl font-bold text-[#ffffff] pr-2">Alunos</h1>
+        <div className="flex">
+        <div className="relative flex items-center w-full max-w-md mr-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black/70 w-4 h-4 z-10" />
+          <Input
+            placeholder="Pesquisar alunos por nome..."
+            className="pl-10 bg-white/90 backdrop-blur-sm border-[#d5c4aa]/30 w- text-black"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
         <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
@@ -320,15 +331,7 @@ export default function AlunosPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <Input
-          placeholder="Pesquisar alunos por nome..."
-          className="pl-10 bg-white/90 backdrop-blur-sm border-[#d5c4aa]/30"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        </div>
       </div>
       {loading ? (
         <div className="text-center py-8">
@@ -364,12 +367,22 @@ export default function AlunosPage() {
                       Idade: {student.age} anos
                     </p>
                     <p className="text-sm text-gray-600">{student.community}</p>
-                    <Badge
-                      variant={student.can_go_alone ? "default" : "secondary"}
-                      className="mt-1"
-                    >
+
+
+
+
+                    <Badge variant={student.can_go_alone ? "default" : "secondary"} className={
+                      `mt-1 ` +
+                      (student.can_go_alone
+                        ? "bg-green-500 text-white"
+                        : "bg-yellow-500 text-black")
+                    }>
                       {student.can_go_alone ? "Independente" : "Acompanhado"}
                     </Badge>
+
+
+
+
                   </div>
                 </div>
               </CardContent>

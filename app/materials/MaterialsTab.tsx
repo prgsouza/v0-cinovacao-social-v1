@@ -143,9 +143,12 @@ export default function MaterialsTab({
     <div className="space-y-8">
       {/* Shortage Carousel */}
       <div>
-        <h2 className="text-2xl font-bold text-[#ffffff] text-center mb-6">
+        <div className="bg-[#E6742D] p-4 rounded-md mb-4">
+          <h2 className="text-3xl font-bold text-[#ffffff]">
           Materiais que estão em falta
-        </h2>
+          </h2>
+        </div>
+        
         <div className="flex gap-4 overflow-x-auto pb-4">
           {materials.filter(
             (material) => material.quantity < material.necessary
@@ -189,15 +192,18 @@ export default function MaterialsTab({
       </div>
 
       {/* Search & Add Material */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-[#E6742D] p-4 rounded-md">
+        <h3 className="text-3xl font-bold text-[#ffffff]">
+          Materiais Gerais
+        </h3>
         <div className="flex gap-2 flex-1 max-w-md">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white w-4 h-4" />
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-4 h-4" />
             <Input
               placeholder="Buscar materiais..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-white text-black/80 placeholder-white w-full"
             />
           </div>
           <div className="relative">
@@ -231,8 +237,7 @@ export default function MaterialsTab({
               </div>
             )}
           </div>
-        </div>
-        <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
+                  <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
           <DialogTrigger asChild>
             <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
               <Plus className="w-4 h-4 mr-2" />
@@ -319,18 +324,17 @@ export default function MaterialsTab({
             </form>
           </DialogContent>
         </Dialog>
+        </div>
+        
       </div>
 
       {/* Materials Grid */}
       <div>
-        <h3 className="text-xl font-semibold text-[#ffffff] mb-4">
-          Materiais Gerais
-        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMaterials.map((material) => (
             <Card
               key={material.id}
-              className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer"
+              className="bg-[#FEF2F2] hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setSelectedMaterial(material)}
             >
               <CardContent className="p-4">

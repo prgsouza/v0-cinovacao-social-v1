@@ -449,155 +449,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 bg-transparent p-4 rounded-xl">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 bg-transparent rounded-xl">
+      <div className="flex items-center justify-between bg-[#E6742D] p-4 rounded-lg">
         <h1 className="text-3xl font-bold text-[#ffffff]">Visão Geral</h1>
-        <div className="flex gap-2">
-          <Popover open={isDateFilterOpen} onOpenChange={setIsDateFilterOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="border-[#d5c4aa] bg-white">
-                <CalendarIcon className="w-4 h-4 mr-2" />
-                Data
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-4">
-                <h4 className="font-medium">Filtrar por período</h4>
-                <div className="grid gap-2">
-                  <Label htmlFor="start-date">Data de início</Label>
-                  <Input
-                    id="start-date"
-                    type="date"
-                    value={dateRange.start}
-                    onChange={(e) =>
-                      setDateRange((prev) => ({
-                        ...prev,
-                        start: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="end-date">Data de fim</Label>
-                  <Input
-                    id="end-date"
-                    type="date"
-                    value={dateRange.end}
-                    onChange={(e) =>
-                      setDateRange((prev) => ({ ...prev, end: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDateFilterOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleDateRangeFilter}
-                    className="bg-[#237C52] hover:bg-[#7f6e62]"
-                  >
-                    Aplicar Filtro
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
-                <Plus className="w-4 h-4 mr-2" />
-                Atividade
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Criar Evento/Atividade</DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  handleAddActivity(formData);
-                }}
-              >
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="activity-title">Título da Atividade</Label>
-                    <Input
-                      id="activity-title"
-                      name="activity-title"
-                      placeholder="Título da atividade"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="responsible">Responsável</Label>
-                    <Input
-                      id="responsible"
-                      name="responsible"
-                      placeholder="Nome do responsável"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="spots">Vagas</Label>
-                    <Input
-                      id="spots"
-                      name="spots"
-                      type="number"
-                      placeholder="Número de vagas"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="activity-description">Descrição</Label>
-                    <Textarea
-                      id="activity-description"
-                      name="activity-description"
-                      placeholder="Detalhes"
-                      required
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="activity-photo">Foto da Atividade</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="activity-photo"
-                        name="activity-photo"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        disabled={uploadingActivityPhoto}
-                      />
-                      <Camera className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      Formatos aceitos: JPEG, PNG, WebP. Tamanho máximo: 5MB
-                    </p>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => setIsAddActivityOpen(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-[#237C52] hover:bg-[#7f6e62]"
-                    disabled={uploadingActivityPhoto}
-                  >
-                    {uploadingActivityPhoto ? "Criando..." : "Criar"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -675,6 +529,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        {/* Card Gráfico */}
         <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-[#7f6e62] text-lg">
