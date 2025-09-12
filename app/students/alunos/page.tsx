@@ -1,5 +1,3 @@
-// app/students/alunos/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -191,144 +189,149 @@ export default function AlunosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#ffffff]">Alunos</h1>
-        <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
-              <Plus className="w-4 h-4 mr-2" />
-              Cadastrar Novo Aluno
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Cadastro de Novo Aluno</DialogTitle>
-            </DialogHeader>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                handleAddStudent(formData);
-              }}
-            >
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="student-name">Nome Completo</Label>
-                  <Input
-                    id="student-name"
-                    name="student-name"
-                    placeholder="Nome completo do aluno"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="community">Qual comunidade pertence?</Label>
-                  <Input
-                    id="community"
-                    name="community"
-                    placeholder="Nome da comunidade"
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="student-photo">Foto do Aluno</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="student-photo"
-                      name="student-photo"
-                      type="file"
-                      accept="image/*"
-                      disabled={uploadingPhoto}
-                    />
-                    <Camera className="w-5 h-5 text-gray-400" />
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Formatos aceitos: JPEG, PNG, WebP. Tamanho máximo: 5MB
-                  </p>
-                  {uploadingPhoto && (
-                    <p className="text-sm text-blue-600">
-                      Fazendo upload da foto...
-                    </p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="age">Idade</Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    type="number"
-                    placeholder="Idade do aluno"
-                    required
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="can-go-alone" name="can-go-alone" />
-                  <Label htmlFor="can-go-alone">Pode voltar sozinho?</Label>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="observations">Observações</Label>
-                  <Textarea
-                    id="observations"
-                    name="observations"
-                    placeholder="Restrições alimentares, alergias, medicamentos, etc."
-                  />
-                </div>
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold text-[#7f6e62] mb-3">
-                    Informações do Responsável
-                  </h3>
-                  <div className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="guardian-name">Nome do Responsável</Label>
-                      <Input
-                        id="guardian-name"
-                        name="guardian-name"
-                        placeholder="Nome do responsável"
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="guardian-phone">
-                        Telefone de Contato
-                      </Label>
-                      <Input
-                        id="guardian-phone"
-                        name="guardian-phone"
-                        placeholder="(11) 99999-9999"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddStudentOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-[#237C52] hover:bg-[#7f6e62]"
-                  disabled={uploadingPhoto}
-                >
-                  {uploadingPhoto ? "Salvando..." : "Cadastrar Aluno"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 pointer-events-none" />
-          <Input
-            placeholder="Pesquisar alunos por nome..."
-            className="pl-12 bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#237C52] focus:border-[#237C52]"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+      {/* Cabeçalho da Página */}
+
+      <div className="flex justify-between bg-[#E6742D] p-4 rounded-md ">
+        <h1 className="text-3xl font-bold text-[#ffffff] pr-2">Alunos</h1>
+        <div className="flex">
+          <div className="relative flex items-center w-full max-w-md mr-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black/70 w-4 h-4 z-10" />
+            <Input
+              placeholder="Pesquisar alunos por nome..."
+              className="pl-10 bg-white/90 backdrop-blur-sm border-[#d5c4aa]/30 w- text-black"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </div>
+
+          <Dialog open={isAddStudentOpen} onOpenChange={setIsAddStudentOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
+                <Plus className="w-4 h-4 mr-2" />
+                Cadastrar Novo Aluno
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Cadastro de Novo Aluno</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  handleAddStudent(formData);
+                }}
+              >
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="student-name">Nome Completo</Label>
+                    <Input
+                      id="student-name"
+                      name="student-name"
+                      placeholder="Nome completo do aluno"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="community">Qual comunidade pertence?</Label>
+                    <Input
+                      id="community"
+                      name="community"
+                      placeholder="Nome da comunidade"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="student-photo">Foto do Aluno</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="student-photo"
+                        name="student-photo"
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingPhoto}
+                      />
+                      <Camera className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Formatos aceitos: JPEG, PNG, WebP. Tamanho máximo: 5MB
+                    </p>
+                    {uploadingPhoto && (
+                      <p className="text-sm text-blue-600">
+                        Fazendo upload da foto...
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="age">Idade</Label>
+                    <Input
+                      id="age"
+                      name="age"
+                      type="number"
+                      placeholder="Idade do aluno"
+                      required
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="can-go-alone" name="can-go-alone" />
+                    <Label htmlFor="can-go-alone">Pode voltar sozinho?</Label>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="observations">Observações</Label>
+                    <Textarea
+                      id="observations"
+                      name="observations"
+                      placeholder="Restrições alimentares, alergias, medicamentos, etc."
+                    />
+                  </div>
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold text-[#7f6e62] mb-3">
+                      Informações do Responsável
+                    </h3>
+                    <div className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="guardian-name">Nome do Responsável</Label>
+                        <Input
+                          id="guardian-name"
+                          name="guardian-name"
+                          placeholder="Nome do responsável"
+                          required
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="guardian-phone">
+                          Telefone de Contato
+                        </Label>
+                        <Input
+                          id="guardian-phone"
+                          name="guardian-phone"
+                          placeholder="(11) 99999-9999"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsAddStudentOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
+                    disabled={uploadingPhoto}
+                  >
+                    {uploadingPhoto ? "Salvando..." : "Cadastrar Aluno"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       {loading ? (
         <div className="text-center py-8">
@@ -364,12 +367,22 @@ export default function AlunosPage() {
                       Idade: {student.age} anos
                     </p>
                     <p className="text-sm text-gray-600">{student.community}</p>
-                    <Badge
-                      variant={student.can_go_alone ? "default" : "secondary"}
-                      className="mt-1"
-                    >
+
+
+
+
+                    <Badge variant={student.can_go_alone ? "default" : "secondary"} className={
+                      `mt-1 ` +
+                      (student.can_go_alone
+                        ? "bg-green-500 text-white"
+                        : "bg-yellow-500 text-black")
+                    }>
                       {student.can_go_alone ? "Independente" : "Acompanhado"}
                     </Badge>
+
+
+
+
                   </div>
                 </div>
               </CardContent>

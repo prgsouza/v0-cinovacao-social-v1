@@ -1,5 +1,3 @@
-// app/students/mulheres/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -250,23 +248,15 @@ export default function MulheresPage() {
   }
 
   return (
-    <div className="space-y-6 bg-transparent p-4 rounded-xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Mulheres</h1>
+    <div className="space-y-6 bg-transparent rounded-xl">
+      <div className="flex items-center justify-between bg-[#E6742D] p-4 rounded-lg">
+        <h1 className="text-3xl font-bold text-[#F4F4F4]">Mulheres</h1>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Card de Chamada */}
-        <Card className="lg:col-span-2 bg-[#F4A460] backdrop-blur-sm relative">
+        <Card className="lg:col-span-2 bg-[#F4F4F4] backdrop-blur-sm relative border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-white font-bold">Chamada</CardTitle>
-            {!canSaveAttendance() && (
-              <div className="text-center pt-2">
-                <p className="text-white/70 text-sm">
-                  Marque a presença de todas as mulheres para confirmar a
-                  chamada
-                </p>
-              </div>
-            )}
+            <CardTitle className="text-[#7f6e62] font-bold">Chamada</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="overflow-y-auto max-h-[280px] space-y-2 pr-2">
@@ -275,8 +265,8 @@ export default function MulheresPage() {
                   key={woman.id}
                   className={`rounded-lg p-3 flex items-center justify-between min-h-[60px] transition-all ${
                     attendanceData[woman.id]
-                      ? "bg-[#E6742D]"
-                      : "bg-[#217E53] border-2 border-dashed border-[#FFFF]"
+                      ? "bg-[#217E53]"
+                      : "bg-[#EB9057]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -321,21 +311,11 @@ export default function MulheresPage() {
               ))}
             </div>
           </CardContent>
-          <CardFooter className="flex items-center justify-between gap-2 pt-3 border-t border-black/20">
-            <Input
-              type="date"
-              value={attendanceDate}
-              onChange={(e) => setAttendanceDate(e.target.value)}
-              className="bg-white/90 text-black border-none text-sm w-auto"
-            />
+          <CardFooter className="flex items-center justify-end gap-2 pt-3">
             <Button
               onClick={handleSaveAttendance}
-              disabled={!canSaveAttendance() || isSavingAttendance}
-              className={`text-xs px-3 py-1 ${
-                canSaveAttendance()
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-gray-400 text-gray-600 cursor-not-allowed"
-              }`}
+              disabled={isSavingAttendance}
+              className="bg-[#237C52] hover:bg-[#7f6e62]"
             >
               {isSavingAttendance ? "Salvando..." : "Confirmar Chamada"}
             </Button>
@@ -343,23 +323,23 @@ export default function MulheresPage() {
         </Card>
 
         {/* Card de Ranking */}
-        <Card className="bg-[#F4A460] backdrop-blur-sm text-white flex flex-col">
+        <Card className="text-white flex flex-col border-none bg-[#f4f4f4]">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-[#7f6e62]">
               Ranking de Participação
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 flex-grow">
+          <CardContent className="space-y-3 flex-grow pt-3">
             <div className="overflow-y-auto max-h-[280px] space-y-3 pr-2">
               {[...women]
                 .sort((a, b) => b.presences - a.presences)
                 .map((woman) => (
                   <div
                     key={woman.id}
-                    className="flex items-center justify-between p-3 bg-white/20 rounded-lg min-h-[60px]"
+                    className="flex items-center justify-between p-3 bg-[#EB9057] rounded-lg min-h-[60px]"
                   >
                     <div className="flex items-center gap-3">
-                      <Avatar>
+                      <Avatar className="w-12 h-12">
                         <AvatarImage src={woman.photo_url || ""} />
                         <AvatarFallback>
                           {woman.name
@@ -377,7 +357,7 @@ export default function MulheresPage() {
                 ))}
             </div>
           </CardContent>
-          <CardFooter className="pt-4 mt-auto border-t border-white/20">
+          <CardFooter className="pt-2 mt-auto justify-end">
             <Dialog
               open={isResetRankingModalOpen}
               onOpenChange={setIsResetRankingModalOpen}
@@ -385,7 +365,7 @@ export default function MulheresPage() {
               <DialogTrigger asChild>
                 <Button
                   variant="destructive"
-                  className="w-lx bg-red-600 hover:bg-red-700"
+                  className="w-lx  bg-red-600 hover:bg-red-700"
                   onClick={() => setIsResetRankingModalOpen(true)}
                 >
                   Zerar Ranking
@@ -424,12 +404,12 @@ export default function MulheresPage() {
         
       {/* Lista e Cadastro */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 bg-[#E6742D] p-4 rounded-lg">
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Pesquisar mulheres por nome..."
-              className="pl-10 bg-white/90 backdrop-blur-sm border-[#d5c4aa]/30"
+              className="pl-10 bg-white/90 backdrop-blur-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -530,11 +510,11 @@ export default function MulheresPage() {
           </Dialog>
         </div>
         <div className="overflow-y-auto max-h-[400px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
             {filteredWomen.map((woman) => (
               <Card
                 key={woman.id}
-                className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer"
+                className="backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer bg-[#F4F4F4] border-none"
                 onClick={() => setSelectedWoman(woman)}
               >
                 <CardContent className="p-4">
@@ -551,15 +531,15 @@ export default function MulheresPage() {
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-[#7f6e62]">
+                    <div className="flex-1 text-white">
+                      <h3 className="font-bold">
                         {woman.name}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-semibold">
                         Idade: {woman.age} anos
                       </p>
-                      <p className="text-sm text-gray-600">{woman.community}</p>
-                      <p className="text-sm text-gray-600">{woman.phone}</p>
+                      <p className="text-sm text-semibold">{woman.community}</p>
+                      <p className="text-sm text-semibold">{woman.phone}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -713,7 +693,7 @@ export default function MulheresPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex justify-end gap-2 pt-4 border-t">
+                <div className="flex justify-end gap-2 pt-4">
                   <Button
                     variant="destructive"
                     onClick={() => setIsDeleteModalOpen(true)}

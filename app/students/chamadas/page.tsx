@@ -94,7 +94,7 @@ function ChamadaContent() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between bg-[#E6742D] p-4 rounded-md">
           <h1 className="text-3xl font-bold text-[#ffffff]">Chamada do Dia</h1>
           <div className="text-sm text-white">{selectedDate?.toLocaleDateString("pt-BR")}</div>
         </div>
@@ -160,7 +160,7 @@ function ChamadaContent() {
             ))}
           </div>
         )}
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 bg-[#E6742D] p-4 rounded-md">
           <Button variant="outline" onClick={() => router.push("/students/dashboard")}>Cancelar</Button>
           <Button className="bg-[#237C52] hover:bg-[#7f6e62]" onClick={handleSaveAttendance}>Salvar Chamada</Button>
         </div>

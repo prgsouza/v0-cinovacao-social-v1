@@ -141,7 +141,6 @@
 
   body {
 
-    background-color: var(--color-ngo-beige, #d5c4aa);
 
     /* imagem de fundo (arquivo dentro de /public/images/) */
     background-image: url("/images/plano-de-fundo.jpg");
