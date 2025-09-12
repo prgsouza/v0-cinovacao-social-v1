@@ -145,10 +145,10 @@ export default function MaterialsTab({
       <div>
         <div className="bg-[#E6742D] p-4 rounded-md mb-4">
           <h2 className="text-3xl font-bold text-[#ffffff]">
-          Materiais que estão em falta
+            Materiais que estão em falta
           </h2>
         </div>
-        
+
         <div className="flex gap-4 overflow-x-auto pb-4">
           {materials.filter(
             (material) => material.quantity < material.necessary
@@ -225,11 +225,10 @@ export default function MaterialsTab({
                       setSelectedMaterialCategory(category);
                       setShowCategoryFilter(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 ${
-                      selectedMaterialCategory === category
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 ${selectedMaterialCategory === category
                         ? "bg-[#237C52] text-white"
                         : ""
-                    }`}
+                      }`}
                   >
                     {category}
                   </button>
@@ -237,95 +236,95 @@ export default function MaterialsTab({
               </div>
             )}
           </div>
-                  <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
-              <Plus className="w-4 h-4 mr-2" />
-              Cadastrar Material
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Cadastrar Novo Material</DialogTitle>
-            </DialogHeader>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                handleAddMaterial(formData);
-              }}
-            >
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="item-name">Item</Label>
-                  <Input
-                    name="item-name"
-                    placeholder="Nome do material"
-                    required
-                  />
+          <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#237C52] hover:bg-[#7f6e62]">
+                <Plus className="w-4 h-4 mr-2" />
+                Cadastrar Material
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Cadastrar Novo Material</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  handleAddMaterial(formData);
+                }}
+              >
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="item-name">Item</Label>
+                    <Input
+                      name="item-name"
+                      placeholder="Nome do material"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="quantity">Quantidade</Label>
+                    <Input
+                      name="quantity"
+                      type="number"
+                      placeholder="Quantidade inicial"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="quantity">Mínimo Necessário</Label>
+                    <Input
+                      name="necessary"
+                      type="number"
+                      placeholder="1 por padrão"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Descrição</Label>
+                    <Textarea
+                      name="description"
+                      placeholder="Descrição do material"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="category">Categoria</Label>
+                    <Select name="category" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {materialCategories
+                          .filter((c) => c !== "Todos")
+                          .map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="quantity">Quantidade</Label>
-                  <Input
-                    name="quantity"
-                    type="number"
-                    placeholder="Quantidade inicial"
-                    required
-                  />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsAddMaterialOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-[#237C52] hover:bg-[#7f6e62]"
+                  >
+                    Cadastrar
+                  </Button>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="quantity">Mínimo Necessário</Label>
-                  <Input
-                    name="necessary"
-                    type="number"
-                    placeholder="1 por padrão"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Textarea
-                    name="description"
-                    placeholder="Descrição do material"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="category">Categoria</Label>
-                  <Select name="category" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {materialCategories
-                        .filter((c) => c !== "Todos")
-                        .map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddMaterialOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-[#237C52] hover:bg-[#7f6e62]"
-                >
-                  Cadastrar
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-        
+
       </div>
 
       {/* Materials Grid */}

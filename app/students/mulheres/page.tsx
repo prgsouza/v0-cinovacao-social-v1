@@ -256,7 +256,7 @@ export default function MulheresPage() {
         {/* Card de Chamada */}
         <Card className="lg:col-span-2 bg-[#F4F4F4] backdrop-blur-sm relative border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-[#7f6e62] font-bold">Chamada</CardTitle>
+            <CardTitle className="text-[#7f6e62] text-lg font-bold">Chamada</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="overflow-y-auto max-h-[280px] space-y-2 pr-2">
@@ -266,7 +266,7 @@ export default function MulheresPage() {
                   className={`rounded-lg p-3 flex items-center justify-between min-h-[60px] transition-all ${
                     attendanceData[woman.id]
                       ? "bg-[#217E53]"
-                      : "bg-[#EB9057]"
+                      : "bg-[#E6742D]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -325,7 +325,7 @@ export default function MulheresPage() {
         {/* Card de Ranking */}
         <Card className="text-white flex flex-col border-none bg-[#f4f4f4]">
           <CardHeader>
-            <CardTitle className="text-[#7f6e62]">
+            <CardTitle className="text-[#7f6e62] text-lg">
               Ranking de Participação
             </CardTitle>
           </CardHeader>
@@ -336,7 +336,7 @@ export default function MulheresPage() {
                 .map((woman) => (
                   <div
                     key={woman.id}
-                    className="flex items-center justify-between p-3 bg-[#EB9057] rounded-lg min-h-[60px]"
+                    className="flex items-center justify-between p-3 bg-[#E6742D] rounded-lg min-h-[60px]"
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="w-12 h-12">
@@ -406,7 +406,7 @@ export default function MulheresPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-4 bg-[#E6742D] p-4 rounded-lg">
           <div className="relative max-w-md flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute z-10 left-3 text-black/80 top-1/2 transform -translate-y-1/2 w-4 h-4" />
             <Input
               placeholder="Pesquisar mulheres por nome..."
               className="pl-10 bg-white/90 backdrop-blur-sm"
@@ -531,7 +531,7 @@ export default function MulheresPage() {
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 text-white">
+                    <div className="flex-1 text-[#7f6e62]">
                       <h3 className="font-bold">
                         {woman.name}
                       </h3>
