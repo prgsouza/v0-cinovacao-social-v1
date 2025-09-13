@@ -11,11 +11,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Material } from "@/lib/material/material.dto";
 import { Lend } from "@/lib/lend/lend.dto";
-import { createLend, updateLend } from "@/lib/lend/lend.service";
+import { createLend, updateLend, deleteLend } from "@/lib/lend/lend.service";
 import { useNotification } from "@/hooks/use-notification";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, Clock } from "lucide-react";
 
 interface LendsTabProps {
   materials: Material[];
@@ -32,6 +42,8 @@ export default function LendsTab({
 }: LendsTabProps) {
   const { showSuccess, showError } = useNotification();
   const [isAddLendOpen, setIsAddLendOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [lendToDelete, setLendToDelete] = useState<Lend | null>(null);
   const [deliveryDate, setDeliveryDate] = useState("");
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
     null
@@ -41,6 +53,25 @@ export default function LendsTab({
   const selectedMaterial = useMemo(() => {
     return materials.find((m) => m.id === selectedMaterialId) || null;
   }, [selectedMaterialId, materials]);
+
+  // Função para verificar se um empréstimo está em atraso
+  const isOverdue = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+    return due < today;
+  };
+
+  // Função para calcular dias de atraso
+  const getDaysOverdue = (dueDate: string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+    const diffTime = today.getTime() - due.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
 
   const handleMaterialChange = (e: {
     target: { value: SetStateAction<string | null> };
@@ -57,6 +88,26 @@ export default function LendsTab({
     target: { value: SetStateAction<string> };
   }) => {
     setDeliveryDate(e.target.value);
+  };
+
+  const handleDeleteClick = (lend: Lend) => {
+    setLendToDelete(lend);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!lendToDelete) return;
+
+    try {
+      await deleteLend(lendToDelete.id);
+      setLends(lends.filter(l => l.id !== lendToDelete.id));
+      showSuccess("Empréstimo removido com sucesso!");
+      setDeleteDialogOpen(false);
+      setLendToDelete(null);
+    } catch (error) {
+      console.error(error);
+      showError("Erro ao remover empréstimo");
+    }
   };
 
   const handleAddLend = async (formData: FormData) => {
@@ -251,21 +302,70 @@ export default function LendsTab({
         </Dialog>
       </div>
 
+      {/* Dialog de confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-5 h-5" />
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover o empréstimo do material{" "}
+              <strong>{lendToDelete?.item_name}</strong> para{" "}
+              <strong>{lendToDelete?.borrower}</strong>?
+              <br />
+              <span className="text-sm text-gray-500 mt-2 block">
+                Esta ação não pode ser desfeita.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setLendToDelete(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {lends.map((lend) => {
             const material = materials.find((m) => m.id === lend.material_id);
+            const overdueStatus = isOverdue(lend.due_date);
+            const daysOverdue = overdueStatus ? getDaysOverdue(lend.due_date) : 0;
+
             return (
-              <Card key={lend.id} className="bg-white/90 backdrop-blur-sm">
-                <CardContent>
-                  <div className="flex items-center justify-between mb-2">
+              <Card 
+                key={lend.id} 
+                className="bg-white/90 backdrop-blur-sm relative"
+              >
+                <CardContent className="relative">
+
+                  <div className="flex items-center justify-between mb-2 pr-20">
                     <h4 className="font-semibold text-[#7f6e62]">
                       {lend.item_name}
                     </h4>
-                    {material && (
+                    {material && !overdueStatus && (
                       <Badge variant="secondary">{material.category}</Badge>
                     )}
                   </div>
+
+                  {overdueStatus && (
+                    <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-700 font-medium flex items-center gap-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        Material em atraso para devolução
+                      </p>
+                    </div>
+                  )}
+
                   <p className="text-sm text-gray-600 mb-1">
                     Material: {material?.name ?? "Desconhecido"}
                   </p>
@@ -285,10 +385,32 @@ export default function LendsTab({
                     Data de Entrega:{" "}
                     {new Date(lend.delivery_date).toLocaleDateString()}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className={`text-xs ${overdueStatus ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
                     Data de Devolução:{" "}
                     {new Date(lend.due_date).toLocaleDateString()}
                   </p>
+
+                  {/* Footer com botão de exclusão e status de atraso */}
+                  <div className="mt-3 flex justify-between items-center ">
+                    {overdueStatus ? (
+                      <Badge className="bg-[#E7000B] text-white rounded-4 px-3 py-1.5 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {daysOverdue} dia{daysOverdue !== 1 ? 's' : ''} de atraso
+                      </Badge>
+                    ) : (
+                      <div></div>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteClick(lend)}
+                      className="text-white hover:text-white bg-red-600 hover:bg-red-500 flex items-center gap-1 border-red-600 hover:border-red-500"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Remover
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );
