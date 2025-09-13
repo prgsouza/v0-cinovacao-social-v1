@@ -306,12 +306,11 @@ export default function LendsTab({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="w-5 h-5" />
+            <AlertDialogTitle className="flex items-center gap-2 text-black">
               Confirmar Exclusão
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja remover o empréstimo do material{" "}
+              Tem certeza que deseja excluir o empréstimo do material{" "}
               <strong>{lendToDelete?.item_name}</strong> para{" "}
               <strong>{lendToDelete?.borrower}</strong>?
               <br />
@@ -328,7 +327,7 @@ export default function LendsTab({
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              Remover
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -407,8 +406,8 @@ export default function LendsTab({
                       onClick={() => handleDeleteClick(lend)}
                       className="text-white hover:text-white bg-red-600 hover:bg-red-500 flex items-center gap-1 border-red-600 hover:border-red-500"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      Remover
+                      <Trash2 className="w-4 h-4"/>
+                      Excluir
                     </Button>
                   </div>
                 </CardContent>

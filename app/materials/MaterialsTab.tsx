@@ -12,6 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -28,12 +38,14 @@ import {
   Minus,
   AlertTriangle,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { useNotification } from "@/hooks/use-notification";
 import { Material } from "@/lib/material/material.dto";
 import {
   createMaterial,
   updateMaterial,
+  deleteMaterial,
 } from "@/lib/material/material.service";
 
 const materialCategories = [
@@ -66,6 +78,8 @@ export default function MaterialsTab({
     null
   );
   const [editingQuantity, setEditingQuantity] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
 
   const { showSuccess, showError } = useNotification();
 
@@ -136,6 +150,26 @@ export default function MaterialsTab({
     } catch (error) {
       console.error(error);
       showError("Erro ao editar quantidade");
+    }
+  };
+
+  const handleDeleteClick = (material: Material) => {
+    setMaterialToDelete(material);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!materialToDelete) return;
+
+    try {
+      await deleteMaterial(materialToDelete.id);
+      setMaterials(materials.filter(m => m.id !== materialToDelete.id));
+      showSuccess(`Material "${materialToDelete.name}" removido com sucesso!`);
+      setDeleteDialogOpen(false);
+      setMaterialToDelete(null);
+    } catch (error) {
+      console.error(error);
+      showError("Erro ao remover material");
     }
   };
 
@@ -327,6 +361,37 @@ export default function MaterialsTab({
 
       </div>
 
+      {/* Dialog de confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-black">
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover o material{" "}
+              <strong>"{materialToDelete?.name}"</strong>?
+              <br />
+              <span className="text-sm text-gray-500 mt-2 block">
+                Esta ação não pode ser desfeita e removerá permanentemente este material do sistema.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setMaterialToDelete(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="w-4 h-4"/>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Materials Grid */}
       <div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -368,6 +433,16 @@ export default function MaterialsTab({
                     }}
                   >
                     <Minus className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white px-3"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(material);
+                    }}
+                  >
+                  <Trash2 className="w-4 h-4"/>
                   </Button>
                 </div>
               </CardContent>

@@ -698,7 +698,7 @@ export default function MulheresPage() {
                     variant="destructive"
                     onClick={() => setIsDeleteModalOpen(true)}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-4 h-4"/>
                     Excluir
                   </Button>
                   <Button
@@ -711,7 +711,7 @@ export default function MulheresPage() {
                     className="bg-[#237C52] hover:bg-[#7f6e62]"
                     onClick={() => setIsEditingWoman(true)}
                   >
-                    <Edit className="w-4 h-4 mr-2" />
+                    <Edit className="w-4 h-4" />
                     Editar
                   </Button>
                 </div>

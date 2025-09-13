@@ -600,7 +600,7 @@ export default function AlunosPage() {
                     variant="destructive"
                     onClick={() => setIsDeleteModalOpen(true)}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-4 h-4" />
                     Excluir
                   </Button>
                   <Button
@@ -613,7 +613,7 @@ export default function AlunosPage() {
                     className="bg-[#237C52] hover:bg-[#7f6e62]"
                     onClick={() => setIsEditingStudent(true)}
                   >
-                    <Edit className="w-4 h-4 mr-2" />
+                    <Edit className="w-4 h-4" />
                     Editar
                   </Button>
                 </div>

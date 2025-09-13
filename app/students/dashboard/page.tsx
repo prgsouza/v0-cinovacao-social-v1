@@ -36,6 +36,7 @@ import {
   Plus,
   CalendarIcon,
   Edit,
+  Trash2,
   Search,
   Mail,
   Bell,
@@ -810,11 +811,13 @@ export default function DashboardPage() {
                       >
                         Editar
                       </Button>
+
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => setActivityToDelete(a)}
                       >
+                        <Trash2 className="w-4 h-4"/>
                         Excluir
                       </Button>
                     </div>
@@ -949,6 +952,7 @@ export default function DashboardPage() {
                         variant="destructive"
                         onClick={() => setReminderToDelete(r)}
                       >
+                        <Trash2 className="w-4 h-4"/>
                         Excluir
                       </Button>
                     </div>
@@ -999,6 +1003,7 @@ export default function DashboardPage() {
                 }
               }}
             >
+              <Trash2 className="w-4 h-4"/>
               Excluir
             </Button>
           </div>
@@ -1193,6 +1198,7 @@ export default function DashboardPage() {
                 }
               }}
             >
+              <Trash2 className="w-4 h-4"/>
               Excluir
             </Button>
           </div>
