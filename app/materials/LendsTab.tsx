@@ -25,7 +25,7 @@ import { Material } from "@/lib/material/material.dto";
 import { Lend } from "@/lib/lend/lend.dto";
 import { createLend, updateLend, deleteLend } from "@/lib/lend/lend.service";
 import { useNotification } from "@/hooks/use-notification";
-import { Plus, Trash2, AlertTriangle, Clock } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, Clock, Check } from "lucide-react";
 
 interface LendsTabProps {
   materials: Material[];
@@ -43,12 +43,17 @@ export default function LendsTab({
   const { showSuccess, showError } = useNotification();
   const [isAddLendOpen, setIsAddLendOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deliverDialogOpen, setDeliverDialogOpen] = useState(false);
   const [lendToDelete, setLendToDelete] = useState<Lend | null>(null);
+  const [lendToDeliver, setLendToDeliver] = useState<Lend | null>(null);
   const [deliveryDate, setDeliveryDate] = useState("");
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
     null
   );
   const [quantity, setQuantity] = useState(1);
+  const [description, setDescription] = useState("");
+  const [deliveredBy, setDeliveredBy] = useState("");
+  const maxDescriptionLength = 140;
 
   const selectedMaterial = useMemo(() => {
     return materials.find((m) => m.id === selectedMaterialId) || null;
@@ -71,6 +76,15 @@ export default function LendsTab({
     due.setHours(0, 0, 0, 0);
     const diffTime = today.getTime() - due.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  // Função para calcular quantidade disponível
+  const getAvailableQuantity = (materialId: string) => {
+    const total = materials.find((m) => m.id === materialId)?.quantity ?? 0;
+    const emprestado = lends
+      .filter((l) => l.material_id === materialId)
+      .reduce((sum, l) => sum + l.quantity, 0);
+    return total - emprestado;
   };
 
   const handleMaterialChange = (e: {
@@ -100,7 +114,7 @@ export default function LendsTab({
 
     try {
       await deleteLend(lendToDelete.id);
-      setLends(lends.filter(l => l.id !== lendToDelete.id));
+      setLends(lends.filter((l) => l.id !== lendToDelete.id));
       showSuccess("Empréstimo removido com sucesso!");
       setDeleteDialogOpen(false);
       setLendToDelete(null);
@@ -121,7 +135,7 @@ export default function LendsTab({
         quantity: Number(formData.get("quantity") as string),
         due_date: new Date(formData.get("return-date") as string).toISOString(),
         category: material?.category ?? "",
-        description: formData.get("description") as string,
+        description, // pega do estado
         authorized_by: formData.get("authorized-by") as string,
         delivered_by: formData.get("delivered-by") as string,
         delivery_date: new Date(
@@ -136,6 +150,36 @@ export default function LendsTab({
     } catch (error) {
       console.error(error);
       showError("Erro ao registrar empréstimo");
+    }
+  };
+
+  const handleMarkAsDelivered = async (lend: Lend) => {
+    try {
+      await deleteLend(lend.id);
+      setLends(lends.filter((l) => l.id !== lend.id));
+      showSuccess("Empréstimo marcado como entregue!");
+    } catch (error) {
+      console.error(error);
+      showError("Erro ao marcar como entregue");
+    }
+  };
+
+  const handleDeliverClick = (lend: Lend) => {
+    setLendToDeliver(lend);
+    setDeliverDialogOpen(true);
+  };
+
+  const handleConfirmDeliver = async () => {
+    if (!lendToDeliver) return;
+    try {
+      await deleteLend(lendToDeliver.id);
+      setLends(lends.filter((l) => l.id !== lendToDeliver.id));
+      showSuccess("Empréstimo marcado como entregue!");
+      setDeliverDialogOpen(false);
+      setLendToDeliver(null);
+    } catch (error) {
+      console.error(error);
+      showError("Erro ao marcar como entregue");
     }
   };
 
@@ -191,7 +235,7 @@ export default function LendsTab({
                     name="quantity"
                     type="number"
                     min={1}
-                    max={selectedMaterial?.quantity || 1}
+                    max={selectedMaterialId ? getAvailableQuantity(selectedMaterialId) : 1}
                     placeholder="Quantidade"
                     value={quantity}
                     onChange={handleQuantityChange}
@@ -266,6 +310,8 @@ export default function LendsTab({
                     placeholder="Digite o nome de quem entregou"
                     required
                     className="input border rounded p-2"
+                    value={deliveredBy}
+                    onChange={e => setDeliveredBy(e.target.value)}
                   />
                 </div>
                 <div className="grid gap-2 sm:col-span-1">
@@ -277,8 +323,14 @@ export default function LendsTab({
                     name="description"
                     placeholder="Digite a descrição"
                     required
+                    maxLength={maxDescriptionLength}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     className="input border rounded p-2 h-[100px]"
                   />
+                  <div className="text-xs text-gray-500 text-right">
+                    {description.length}/{maxDescriptionLength}
+                  </div>
                 </div>
               </div>
 
@@ -327,8 +379,37 @@ export default function LendsTab({
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              <Trash2 className="w-4 h-4"/>
+              <Trash2 className="w-4 h-4" />
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de confirmação de entrega */}
+      <AlertDialog open={deliverDialogOpen} onOpenChange={setDeliverDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-black">
+              Confirmar Entrega
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja marcar o empréstimo do material{" "}
+              <strong>{lendToDeliver?.item_name}</strong> para{" "}
+              <strong>{lendToDeliver?.borrower}</strong> como{" "}
+              <span className="text-green-700 font-bold">entregue</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setLendToDeliver(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeliver}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Check className="w-4 h-4" />
+              Entregue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -342,73 +423,83 @@ export default function LendsTab({
             const daysOverdue = overdueStatus ? getDaysOverdue(lend.due_date) : 0;
 
             return (
-              <Card 
-                key={lend.id} 
-                className="bg-white/90 backdrop-blur-sm relative"
+              <Card
+                key={lend.id}
+                className="bg-white/90 backdrop-blur-sm relative min-h-[260px] flex flex-col"
               >
-                <CardContent className="relative">
-
-                  <div className="flex items-center justify-between mb-2 pr-20">
-                    <h4 className="font-semibold text-[#7f6e62]">
+                <CardContent className="relative flex flex-col h-full">
+                  {/* Linha do título e atraso */}
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold text-[#7f6e62] text-lg">
                       {lend.item_name}
                     </h4>
-                    {material && !overdueStatus && (
-                      <Badge variant="secondary">{material.category}</Badge>
-                    )}
-                  </div>
-
-                  {overdueStatus && (
-                    <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-md">
-                      <p className="text-sm text-red-700 font-medium flex items-center gap-1">
-                        <AlertTriangle className="w-4 h-4" />
-                        Material em atraso para devolução
-                      </p>
-                    </div>
-                  )}
-
-                  <p className="text-sm text-gray-600 mb-1">
-                    Material: {material?.name ?? "Desconhecido"}
-                  </p>
-                  <p className="text-sm text-gray-600 mb-1">
-                    Quantidade: {lend.quantity}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Emprestado para: {lend.borrower}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Entregue por: {lend.delivered_by}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Autorizado por: {lend.authorized_by}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Data de Entrega:{" "}
-                    {new Date(lend.delivery_date).toLocaleDateString()}
-                  </p>
-                  <p className={`text-xs ${overdueStatus ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                    Data de Devolução:{" "}
-                    {new Date(lend.due_date).toLocaleDateString()}
-                  </p>
-
-                  {/* Footer com botão de exclusão e status de atraso */}
-                  <div className="mt-3 flex justify-between items-center ">
-                    {overdueStatus ? (
-                      <Badge className="bg-[#E7000B] text-white rounded-4 px-3 py-1.5 flex items-center gap-1">
+                    {overdueStatus && (
+                      <Badge className="bg-[#E6742D] text-white rounded-4 px-3 py-1.5 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {daysOverdue} dia{daysOverdue !== 1 ? 's' : ''} de atraso
                       </Badge>
-                    ) : (
-                      <div></div>
                     )}
-                    
+                  </div>
+                  {/* Categoria */}
+                  {material && (
+                    <div className="mb-1">
+                      <Badge variant="secondary" className="text-xs px-2 py-1">
+                        {material.category}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Demais informações */}
+                  <div className="flex flex-col gap-1 text-xs text-gray-700 mb-2">
+                    <span>
+                      <span className="font-semibold text-[#7f6e62]">Quantidade:</span> {lend.quantity}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-[#7f6e62]">Solicitante:</span> {lend.borrower}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-[#7f6e62]">Entregue por:</span> {lend.delivered_by}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-[#7f6e62]">Autorizado por:</span> {lend.authorized_by}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-[#7f6e62]">Data de Entrega:</span> {new Date(lend.delivery_date).toLocaleDateString()}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-[#7f6e62]">Data de Devolução:</span>{" "}
+                      <span className={overdueStatus ? "text-[#E6742D] font-semibold" : ""}>
+                        {new Date(lend.due_date).toLocaleDateString()}
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* Descrição no final, com limite e quebra de linha */}
+                  {lend.description && (
+                    <div className="mb-2 max-h-16 overflow-y-auto break-words text-xs italic text-gray-500 border-t pt-2">
+                      {lend.description}
+                    </div>
+                  )}
+
+                  {/* Rodapé com botões em extremos, mais afastados */}
+                  <div className="mt-auto flex justify-between items-center pt-6">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDeleteClick(lend)}
                       className="text-white hover:text-white bg-red-600 hover:bg-red-500 flex items-center gap-1 border-red-600 hover:border-red-500"
                     >
-                      <Trash2 className="w-4 h-4"/>
+                      <Trash2 className="w-4 h-4" />
                       Excluir
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeliverClick(lend)}
+                      className="text-white hover:text-white bg-green-600 hover:bg-green-500 flex items-center gap-1 border-green-600 hover:border-green-500"
+                    >
+                      <Check className="w-4 h-4" />
+                      Entregue
                     </Button>
                   </div>
                 </CardContent>
