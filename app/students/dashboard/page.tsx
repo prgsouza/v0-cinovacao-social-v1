@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, ChangeEvent } from "react";
+import { SetStateAction, useState, useEffect, useRef, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -119,6 +119,8 @@ export default function DashboardPage() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
+  const [deliveryDate, setDeliveryDate] = useState<string>("");
+  const [lends, setLends] = useState<Lend[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
   const [isReminderDetailOpen, setIsReminderDetailOpen] = useState(false);
@@ -219,9 +221,10 @@ export default function DashboardPage() {
         responsible: formData.get("responsible") as string,
         spots: Number.parseInt(formData.get("spots") as string),
         description: formData.get("activity-description") as string,
-        date: format(new Date(), "yyyy-MM-dd"),
+        date: formData.get("delivery-date") as string,
         photo_url: undefined,
       };
+
 
       // Create the activity first to get an ID
       const created = await createActivity(newActivity);
@@ -275,7 +278,9 @@ export default function DashboardPage() {
         responsible: formData.get("responsible") as string,
         spots: Number.parseInt(formData.get("spots") as string),
         description: formData.get("activity-description") as string,
+        date: formData.get("delivery-date") as string, // <-- faltava isso
       };
+
 
       // Handle photo upload if a new file was selected
       const photoFile = formData.get("activity-photo") as File;
@@ -328,6 +333,14 @@ export default function DashboardPage() {
       showSuccess(`Filtro aplicado: ${dateRange.start} até ${dateRange.end}`);
       setIsDateFilterOpen(false);
     }
+  };
+
+    const handleDeliveryDateChange = (id: string, value: string) => {
+    setLends((prev) =>
+      prev.map((lend) =>
+        lend.id === id ? { ...lend, delivery_date: value } : lend
+      )
+    );
   };
 
   const handleAddReminder = async (formData: FormData) => {
@@ -723,6 +736,18 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div className="grid gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Data da Atividade
+                      </label>
+                      <input
+                        type="date"
+                        id="delivery-date"
+                        name="delivery-date"
+                        required
+                        className="input border rounded p-2"
+                      />
+                    </div>
+                    <div className="grid gap-2">
                       <Label htmlFor="activity-photo">Foto</Label>
                       <Input
                         id="activity-photo"
@@ -786,13 +811,7 @@ export default function DashboardPage() {
                         </h4>
                         {a.date && (
                           <p className="text-xs text-gray-500">
-                            {format(
-                              new Date(a.date + "T12:00:00Z"),
-                              "dd 'de' MMMM",
-                              {
-                                locale: ptBR,
-                              }
-                            )}
+                            {new Date(a.date + "T12:00:00Z").toLocaleDateString("pt-BR")}
                           </p>
                         )}
                       </div>
@@ -1067,6 +1086,18 @@ export default function DashboardPage() {
                       name="activity-description"
                       defaultValue={selectedActivity.description}
                       required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Data da Atividade
+                    </label>
+                    <input
+                      type="date"
+                      id="delivery-date"
+                      name="delivery-date"
+                      required
+                      className="input border rounded p-2"
                     />
                   </div>
                   <div className="grid gap-2">
