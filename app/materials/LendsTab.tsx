@@ -327,6 +327,7 @@ export default function LendsTab({
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
+              <Trash2 className="w-4 h-4"/>
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
