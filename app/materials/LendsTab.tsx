@@ -416,7 +416,7 @@ export default function LendsTab({
       </AlertDialog>
 
       <div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {lends.map((lend) => {
             const material = materials.find((m) => m.id === lend.material_id);
             const overdueStatus = isOverdue(lend.due_date);

@@ -91,8 +91,8 @@ export default function MaterialsLayout({ children, activeTab, setActiveTab }: M
           </Sidebar>
 
           <main className="flex-1 relative">
-            <div className="absolute top-5 left-5 z-30">
-              <SidebarTrigger className="text-white bg-[#E7732D] hover:shadow-lg" />
+            <div className="absolute top-5 -left-1 ">
+              <SidebarTrigger className="text-white bg-[#E7732D] hover:shadow-lg fixed" />
             </div>
             <div className="p-6 pt-16 lg:pt-6">{children}</div>
           </main>

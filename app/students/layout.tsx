@@ -50,14 +50,12 @@ function MainContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <main className="flex-1 relative">
-      {/* Always visible toggle button with better positioning */}
-      <div className="fixed top-4 left-4 z-40">
-        <SidebarTrigger className="text-white bg-[#E6742D] hover:bg-[#d5632a] hover:shadow-lg shadow-md rounded-md transition-all duration-200" />
-      </div>
-      {/* Add top padding to content to avoid overlap */}
-      <div className="p-6 pt-6">{children}</div>
-    </main>
+          <main className="flex-1 relative">
+            <div className="absolute top-5 -left-1 ">
+              <SidebarTrigger className="text-white bg-[#E7732D] hover:shadow-lg fixed" />
+            </div>
+            <div className="p-6 pt-16 lg:pt-6">{children}</div>
+          </main>
   );
 }
 
